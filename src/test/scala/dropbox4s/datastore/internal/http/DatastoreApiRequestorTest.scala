@@ -6,6 +6,7 @@ package dropbox4s.datastore.internal.http
 
 import org.specs2.mutable._
 import dropbox4s.datastore.auth.AccessToken
+import dispatch._, Defaults._
 
 class DatastoreApiRequestorTest extends Specification {
   "get_or_request_url" should {
@@ -18,7 +19,13 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "url that is set post parameter dsid and authrization header" in {
-      val url = DatastoreApiRequestor.getOrCreateUrl("test-datastore", AccessToken("test-token"))
+      val req = DatastoreApiRequestor.getOrCreateUrl("test-datastore", AccessToken("test-token"))
+
+      req.url must equalTo("https://api.dropbox.com/1/datastores/get_or_create_datastore")
+      req.toRequest.getMethod must equalTo("POST")
+      req.toRequest.getParams.size() must equalTo(1)
+      req.toRequest.getParams.get("dsid").get(0) must equalTo("test-datastore")
+      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo("Bearer test-token")
     }
   }
 }
