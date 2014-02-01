@@ -1,4 +1,4 @@
-package dropbox4s.datastore.models
+package dropbox4s.datastore.internal.jsons
 
 /**
  * @author mao.instantlife at gmail.com

@@ -1,7 +1,7 @@
 package dropbox4s.datastore
 
-import dropbox4s.datastore.models.GerOrCreateResult
 import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.datastore.internal.jsons.GerOrCreateResult
 
 /**
  * @author mao.instantlife at gmail.com

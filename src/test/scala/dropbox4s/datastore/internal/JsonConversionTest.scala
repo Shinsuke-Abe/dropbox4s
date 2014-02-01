@@ -7,12 +7,12 @@ package dropbox4s.datastore.internal
 import org.specs2.mutable._
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import dropbox4s.datastore.models._
-import dropbox4s.datastore.models.WrappedTimestamp
+import dropbox4s.datastore.internal.jsons._
+import dropbox4s.datastore.internal.jsons.WrappedTimestamp
 import scala.Some
-import dropbox4s.datastore.models.DsInfo
-import dropbox4s.datastore.models.ListDatastoresResult
-import dropbox4s.datastore.models.GerOrCreateResult
+import dropbox4s.datastore.internal.jsons.DsInfo
+import dropbox4s.datastore.internal.jsons.ListDatastoresResult
+import dropbox4s.datastore.internal.jsons.GerOrCreateResult
 
 class JsonConversionTest extends Specification {
   implicit val format = DefaultFormats

@@ -1,4 +1,4 @@
-package dropbox4s.datastore.models
+package dropbox4s.datastore.internal.jsons
 
 /**
  * Get or Create Datastore API result.
