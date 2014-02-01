@@ -1,15 +1,15 @@
 package dropbox4s.datastore
 
 import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.jsons.GerOrCreateResult
+import dropbox4s.datastore.internal.jsons.GetOrCreateResult
 
 /**
  * @author mao.instantlife at gmail.com
  */
 object Datastore {
 
-  def get_or_create(dsid: String)(implicit token: AccessToken): GerOrCreateResult = {
+  def get_or_create(dsid: String)(implicit token: AccessToken): GetOrCreateResult = {
     require(Option(dsid).isDefined && !dsid.isEmpty)
-    GerOrCreateResult("test_handle", 0, true)
+    GetOrCreateResult("test_handle", 0, true)
   }
 }

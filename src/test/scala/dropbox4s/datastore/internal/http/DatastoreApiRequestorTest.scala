@@ -25,15 +25,15 @@ class DatastoreApiRequestorTest extends Specification {
 
   "get_or_request_url" should {
     "throw exception when both parameter is null" in {
-      DatastoreApiRequestor.getOrCreateUrl(null, null) must throwA[IllegalArgumentException]
+      GetOrCreateUrl.generateReq(null, null) must throwA[IllegalArgumentException]
     }
 
     "throw exception when dsid parameter is empty string" in {
-      DatastoreApiRequestor.getOrCreateUrl("", testToken) must throwA[IllegalArgumentException]
+      GetOrCreateUrl.generateReq(testToken, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter dsid and authorization header" in {
-      val req = DatastoreApiRequestor.getOrCreateUrl("test-datastore", testToken)
+      val req = GetOrCreateUrl.generateReq(testToken, "test-datastore")
 
       req isDatastoresApi ("/get_or_create_datastore", "POST", testToken)
       req.toRequest.getParams.size() must equalTo(1)
@@ -43,11 +43,11 @@ class DatastoreApiRequestorTest extends Specification {
 
   "list_datastores_url" should {
     "throw exception when access token is null" in {
-      DatastoreApiRequestor.listDatastoresUrl(null) must throwA[IllegalArgumentException]
+      ListDatastoresUrl.generateReq(null) must throwA[IllegalArgumentException]
     }
 
     "url that is set authorization header" in {
-      val req = DatastoreApiRequestor.listDatastoresUrl(testToken)
+      val req = ListDatastoresUrl.generateReq(testToken)
 
       req isDatastoresApi ("/list_datastores", "GET", testToken)
     }

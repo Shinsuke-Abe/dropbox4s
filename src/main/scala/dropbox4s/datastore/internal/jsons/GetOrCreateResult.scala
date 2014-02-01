@@ -9,4 +9,4 @@ package dropbox4s.datastore.internal.jsons
  *
  * @author mao.instantlife at gmail.com
  */
-case class GerOrCreateResult(handle: String, rev: Int, created: Boolean)
+case class GetOrCreateResult(handle: String, rev: Int, created: Boolean)
