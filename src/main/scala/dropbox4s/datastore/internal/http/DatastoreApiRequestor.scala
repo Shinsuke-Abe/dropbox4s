@@ -21,12 +21,16 @@ import dispatch._, Defaults._
 import dropbox4s.datastore.internal.jsons.{GetOrCreateResult, ListDatastoresResult}
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import dropbox4s.commons.DropboxException
+import org.json4s.JsonAST.JValue
+import org.json4s.JValue
 
 /**
  * @author mao.instantlife at gmail.com
  */
 trait DatastoreApiRequestor[ParamType, ResType] {
   implicit val format = DefaultFormats
+
   val baseUrl = host("api.dropbox.com").secure / "1" / "datastores"
 
   protected def authHeader(token: AccessToken) = Map("Authorization" -> s"Bearer ${token.token}")
@@ -35,13 +39,21 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 
   protected def executeReq(token: AccessToken, input: ParamType): ResType = {
     val request = Http(generateReq(token, input) OK as.String)
+    val response = parse(request())
 
-    parseJsonToclass(request())
+    verifyResponse(response)
+
+    parseJsonToclass(response)
   }
 
-  protected def parseJsonToclass(response: String): ResType
+  protected def verifyResponse(response: JValue) {}
+
+  protected def parseJsonToclass(response: JValue): ResType
 }
 
+/**
+ * get_or_create_datastore requestor
+ */
 object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
   def apply(token: AccessToken, dsid: String): GetOrCreateResult = executeReq(token, dsid)
 
@@ -51,9 +63,12 @@ object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateRes
     baseUrl / "get_or_create_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: String) = parse(response).extract[GetOrCreateResult]
+  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
 }
 
+/**
+ * get_datastore requestor
+ */
 object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
   def apply(token: AccessToken, dsid: String): GetOrCreateResult = executeReq(token, dsid)
 
@@ -63,9 +78,22 @@ object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
     baseUrl / "get_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: String) = parse(response).extract[GetOrCreateResult]
+  override protected def verifyResponse(response: JValue) {
+    val notfound = response findField {
+      case JField("notfound", _) => true
+      case _ => false
+    }
+
+    if(notfound.isDefined)
+      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
+  }
+
+  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
 }
 
+/**
+ * list_datastores requestor
+ */
 object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
   def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
   
@@ -75,5 +103,5 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastore
     baseUrl / "list_datastores" <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: String) = parse(response).extract[ListDatastoresResult]
+  protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
 }
