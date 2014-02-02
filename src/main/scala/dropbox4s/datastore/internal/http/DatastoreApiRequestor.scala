@@ -18,7 +18,7 @@ package dropbox4s.datastore.internal.http
 
 import dropbox4s.datastore.auth.AccessToken
 import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsons.{GetOrCreateResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsons.{DeleteDatastoreResult, GetOrCreateResult, ListDatastoresResult}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
@@ -89,6 +89,21 @@ object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
+}
+
+/**
+ * delete_datastore requestor
+ */
+object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteDatastoreResult] {
+  def apply(token: AccessToken, handle: String):DeleteDatastoreResult = executeReq(token, handle)
+
+  private[dropbox4s] def generateReq(token: AccessToken, handle: String) = {
+    require(Option(handle).isDefined && !handle.isEmpty && Option(token).isDefined)
+
+    baseUrl / "delete_datastore" << Map("handle" -> handle) <:< authHeader(token)
+  }
+
+  protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
 }
 
 /**

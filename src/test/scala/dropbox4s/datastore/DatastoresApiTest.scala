@@ -26,13 +26,19 @@ class DatastoresApiTest extends Specification {
     val testDsName = s"test_ds_${createTimeStamp}"
 
     "get Datastore result with orCreate flag" in {
-      get(s"$testDsName", orCreate).dsid must equalTo(s"$testDsName")
+      val createdDs = get(s"$testDsName", orCreate)
+
+      createdDs.dsid must equalTo(s"$testDsName")
       listDatastores.exists(_.dsid == testDsName) must beTrue
 
       get(s"$testDsName", orCreate).created must beFalse
 
       // without orCreate flag
       get(s"$testDsName").created must beFalse
+
+      // delete datastore
+      createdDs.delete.ok must equalTo(s"Deleted datastore with handle: u'${createdDs.handle}'")
+      listDatastores.exists(_.dsid == testDsName) must beFalse
     }
 
     "throw exception not found datastore without orCreate flag" in {

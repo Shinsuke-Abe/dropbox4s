@@ -74,6 +74,31 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
+  // datastores/delete_datastore
+  "DeleteDatastoreRequestor#generateReq" should {
+    "throw exception when both parameter is null" in {
+      DeleteDatastoreRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when dsid parameter is empty string" in {
+      DeleteDatastoreRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+    }
+
+    "url that is set post parameter dsid and authorization header" in {
+      val req = DeleteDatastoreRequestor.generateReq(testToken, "test-handle")
+
+      req isDatastoresApi ("/delete_datastore", "POST", testToken)
+      req.toRequest.getParams.size() must equalTo(1)
+      req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
+    }
+  }
+
+  "DeleteDatastoreRequestor#apply" should {
+    "throw exception when unauth request is failed" in {
+      DeleteDatastoreRequestor(testToken, "failed-request") must throwA[ExecutionException]
+    }
+  }
+
   // datastore/list_datastores
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
