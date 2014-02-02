@@ -20,8 +20,10 @@ trait DatastoreApiRequestor[ParamType, ResType] {
   protected def executeReq(token: AccessToken, input: ParamType): ResType = {
     val request = Http(generateReq(token, input) OK as.String)
 
-    parse(request()).extract
+    parseJsonToclass(request())
   }
+
+  protected def parseJsonToclass(response: String): ResType
 }
 
 object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
@@ -32,9 +34,11 @@ object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateRes
 
     baseUrl / "get_or_create_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
   }
+
+  protected def parseJsonToclass(response: String): GetOrCreateResult = parse(response).extract[GetOrCreateResult]
 }
 
-object ListDatastoresUrl extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
+object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
   def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
   
   private[dropbox4s] def generateReq(token: AccessToken, input: Unit = ()) = {
@@ -42,4 +46,6 @@ object ListDatastoresUrl extends DatastoreApiRequestor[Unit, ListDatastoresResul
 
     baseUrl / "list_datastores" <:< authHeader(token)
   }
+
+  protected def parseJsonToclass(response: String): ListDatastoresResult = parse(response).extract[ListDatastoresResult]
 }

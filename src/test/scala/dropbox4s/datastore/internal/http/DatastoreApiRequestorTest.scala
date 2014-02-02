@@ -50,11 +50,11 @@ class DatastoreApiRequestorTest extends Specification {
 
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
-      ListDatastoresUrl.generateReq(null) must throwA[IllegalArgumentException]
+      ListDatastoresRequestor.generateReq(null) must throwA[IllegalArgumentException]
     }
 
     "url that is set authorization header" in {
-      val req = ListDatastoresUrl.generateReq(testToken)
+      val req = ListDatastoresRequestor.generateReq(testToken)
 
       req isDatastoresApi ("/list_datastores", "GET", testToken)
     }
@@ -62,7 +62,24 @@ class DatastoreApiRequestorTest extends Specification {
 
   "ListDatastoresRequestor#apply" should {
     "throw exception when unauth request is failed" in {
-      ListDatastoresUrl(testToken) must throwA[ExecutionException]
+      ListDatastoresRequestor(testToken) must throwA[ExecutionException]
     }
   }
+
+  // the follow test is specification test.
+//  "RequestNotFound" should {
+//    "throw exception not found url" in {
+//      val notFound = new DatastoreApiRequestor[Unit, Unit] {
+//        def apply(token: AccessToken, input: Unit = ()): Unit = executeReq(token, input)
+//
+//        private[dropbox4s] def generateReq(token: AccessToken, input: Unit = ()) = {
+//          require(Option(token).isDefined)
+//
+//          baseUrl / "not_found" <:< authHeader(token)
+//        }
+//      }
+//
+//      notFound(testToken) must throwA[ExecutionException]
+//    }
+//  }
 }

@@ -5,12 +5,12 @@ package dropbox4s.datastore
  */
 
 import org.specs2.mutable._
-import dropbox4s.datastore.auth.AccessToken
+import java.util.Date
 
 class DatastoreTest extends Specification {
-  import dropbox4s.datastore.Datastore._
+  import dropbox4s.datastore.DatastoresApi._
 
-  implicit val token = AccessToken("test_token")
+  implicit val token = TestConstants.testUser1
 
   "get_or_create" should {
     "throw exception with null value" in {
@@ -22,7 +22,11 @@ class DatastoreTest extends Specification {
     }
 
     "get GetOrCreateResult" in {
-      get_or_create("test_datastore") must not beNull
+      val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
+      val testDsName = s"test_ds_${createTimeStamp}"
+
+      get_or_create(s"$testDsName").dsid must equalTo(s"$testDsName")
+      list_datastores.exists(_.dsid == testDsName) must beTrue
     }
   }
 }
