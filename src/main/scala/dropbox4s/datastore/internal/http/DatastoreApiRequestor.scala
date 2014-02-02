@@ -22,7 +22,6 @@ import dropbox4s.datastore.internal.jsons.{DeleteDatastoreResult, GetOrCreateRes
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
-import org.json4s.JsonAST.JValue
 import org.json4s.JValue
 
 /**
@@ -101,6 +100,16 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
     require(Option(handle).isDefined && !handle.isEmpty && Option(token).isDefined)
 
     baseUrl / "delete_datastore" << Map("handle" -> handle) <:< authHeader(token)
+  }
+
+  override protected def verifyResponse(response: JValue) {
+    val notfound = response findField {
+      case JField("notfound", _) => true
+      case _ => false
+    }
+
+    if(notfound.isDefined)
+      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]

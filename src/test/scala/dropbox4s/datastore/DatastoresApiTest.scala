@@ -7,6 +7,8 @@ package dropbox4s.datastore
 import org.specs2.mutable._
 import java.util.Date
 import dropbox4s.commons.DropboxException
+import dropbox4s.datastore.model.Datastore
+import dropbox4s.datastore.internal.jsons.GetOrCreateResult
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
@@ -43,6 +45,13 @@ class DatastoresApiTest extends Specification {
 
     "throw exception not found datastore without orCreate flag" in {
       get("not-found") must throwA[DropboxException](message = "No datastore found for dsid: u'not-found'")
+    }
+  }
+
+  "delete" should {
+    "throw exception not found datastore handle" in {
+      Datastore("dsnotfound", Some(GetOrCreateResult("handlenotfound", 0))).delete must
+        throwA[DropboxException](message = "No datastore was found for handle: u'handlenotfound'")
     }
   }
 }
