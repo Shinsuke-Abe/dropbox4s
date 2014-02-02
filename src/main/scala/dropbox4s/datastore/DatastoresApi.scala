@@ -19,7 +19,7 @@ package dropbox4s.datastore
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsons.{GetOrCreateResult, ListDatastoresResult}
 import dropbox4s.datastore.model.Datastore
-import dropbox4s.datastore.internal.http.{ListDatastoresRequestor, GetOrCreateRequestor}
+import dropbox4s.datastore.internal.http.{GetRequestor, ListDatastoresRequestor, GetOrCreateRequestor}
 
 /**
  * @author mao.instantlife at gmail.com
@@ -29,7 +29,8 @@ object DatastoresApi {
   def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) = {
     require(Option(dsid).isDefined && !dsid.isEmpty)
 
-    Datastore(dsid, Some(GetOrCreateRequestor(token, dsid)))
+    if (createFlag) Datastore(dsid, Some(GetOrCreateRequestor(token, dsid)))
+    else Datastore(dsid, Some(GetRequestor(token, dsid)))
   }
 
   val orCreate = true

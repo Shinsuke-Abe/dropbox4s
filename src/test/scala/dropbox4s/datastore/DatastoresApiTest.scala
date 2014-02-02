@@ -12,7 +12,7 @@ class DatastoresApiTest extends Specification {
 
   implicit val token = TestConstants.testUser1
 
-  "get_or_create" should {
+  "get" should {
     "throw exception with null value" in {
       get(null) must throwA[IllegalArgumentException]
     }
@@ -21,14 +21,19 @@ class DatastoresApiTest extends Specification {
       get("") must throwA[IllegalArgumentException]
     }
 
-    "get GetOrCreateResult" in {
-      val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
-      val testDsName = s"test_ds_${createTimeStamp}"
+    val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
+    val testDsName = s"test_ds_${createTimeStamp}"
 
+    "get Datastore result with orCreate flag" in {
       get(s"$testDsName", orCreate).dsid must equalTo(s"$testDsName")
       listDatastores.exists(_.dsid == testDsName) must beTrue
 
       get(s"$testDsName", orCreate).created must beFalse
+
+      // without orCreate flag
+      get(s"$testDsName").created must beFalse
     }
+
+    // "throw exception not found datastore without orCreate flag"
   }
 }

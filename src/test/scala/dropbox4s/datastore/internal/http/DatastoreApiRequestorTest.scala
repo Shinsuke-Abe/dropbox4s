@@ -24,6 +24,7 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
+  // datastores/get_or_create_datastore
   "GerOrCreateRequestor#generateReq" should {
     "throw exception when both parameter is null" in {
       GetOrCreateRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
@@ -48,6 +49,32 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
+  // datastores/get_datastore
+  "GerRequestor#generateReq" should {
+    "throw exception when both parameter is null" in {
+      GetRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when dsid parameter is empty string" in {
+      GetRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+    }
+
+    "url that is set post parameter dsid and authorization header" in {
+      val req = GetRequestor.generateReq(testToken, "test-datastore")
+
+      req isDatastoresApi ("/get_datastore", "POST", testToken)
+      req.toRequest.getParams.size() must equalTo(1)
+      req.toRequest.getParams.get("dsid").get(0) must equalTo("test-datastore")
+    }
+  }
+
+  "GerRequestor#apply" should {
+    "throw exception when unauth request is failed" in {
+      GetRequestor(testToken, "failed-request") must throwA[ExecutionException]
+    }
+  }
+
+  // datastore/list_datastores
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
       ListDatastoresRequestor.generateReq(null) must throwA[IllegalArgumentException]

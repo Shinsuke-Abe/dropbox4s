@@ -51,7 +51,19 @@ object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateRes
     baseUrl / "get_or_create_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: String): GetOrCreateResult = parse(response).extract[GetOrCreateResult]
+  protected def parseJsonToclass(response: String) = parse(response).extract[GetOrCreateResult]
+}
+
+object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
+  def apply(token: AccessToken, dsid: String): GetOrCreateResult = executeReq(token, dsid)
+
+  private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
+    require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
+
+    baseUrl / "get_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
+  }
+
+  protected def parseJsonToclass(response: String) = parse(response).extract[GetOrCreateResult]
 }
 
 object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
@@ -63,5 +75,5 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastore
     baseUrl / "list_datastores" <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: String): ListDatastoresResult = parse(response).extract[ListDatastoresResult]
+  protected def parseJsonToclass(response: String) = parse(response).extract[ListDatastoresResult]
 }
