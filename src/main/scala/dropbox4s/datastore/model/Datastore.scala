@@ -16,11 +16,11 @@ package dropbox4s.datastore.model
  * limitations under the License.
  */
 
-import dropbox4s.datastore.internal.jsons.GetOrCreateResult
+import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
 
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Datastore(dsid: String, result: Option[GetOrCreateResult]) {
+case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) {
 
 }

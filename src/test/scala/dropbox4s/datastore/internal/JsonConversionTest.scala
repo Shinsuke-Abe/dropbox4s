@@ -12,7 +12,7 @@ import dropbox4s.datastore.internal.jsons.WrappedTimestamp
 import scala.Some
 import dropbox4s.datastore.internal.jsons.DsInfo
 import dropbox4s.datastore.internal.jsons.ListDatastoresResult
-import dropbox4s.datastore.internal.jsons.GetOrCreateResult
+import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
 
 class JsonConversionTest extends Specification {
   implicit val format = DefaultFormats
@@ -21,7 +21,7 @@ class JsonConversionTest extends Specification {
     "json convert to GetOrCreateResult" in {
       val testResult = parse("""{"handle": "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", "rev": 0, "created": true}""")
 
-      testResult.extract[GetOrCreateResult] must equalTo(GetOrCreateResult("1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, true))
+      testResult.extract[GetOrCreateDatastoreResult] must equalTo(GetOrCreateDatastoreResult("1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, true))
     }
   }
 

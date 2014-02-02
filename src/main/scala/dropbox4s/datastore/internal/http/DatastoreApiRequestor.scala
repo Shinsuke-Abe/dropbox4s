@@ -18,7 +18,7 @@ package dropbox4s.datastore.internal.http
 
 import dropbox4s.datastore.auth.AccessToken
 import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsons.{DeleteDatastoreResult, GetOrCreateResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsons.{DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
@@ -32,10 +32,22 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 
   val baseUrl = host("api.dropbox.com").secure / "1" / "datastores"
 
+  /**
+   * Set authenticate header of OAuth2 for datastore api request header.
+   * @param token Access token
+   * @return request set authenticate header
+   */
   protected def authHeader(token: AccessToken) = Map("Authorization" -> s"Bearer ${token.token}")
 
   private[dropbox4s] def generateReq(token: AccessToken, input: ParamType): Req
 
+  /**
+   * Execute datastore api request.
+   *
+   * @param token Access token
+   * @param input decide in implements Requestor
+   * @return decide in implements Requestor
+   */
   protected def executeReq(token: AccessToken, input: ParamType): ResType = {
     val request = Http(generateReq(token, input) OK as.String)
     val response = parse(request())
@@ -63,8 +75,8 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 /**
  * get_or_create_datastore requestor
  */
-object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
-  def apply(token: AccessToken, dsid: String): GetOrCreateResult = executeReq(token, dsid)
+object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
+  def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
 
   private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
     require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
@@ -72,14 +84,14 @@ object GetOrCreateRequestor extends DatastoreApiRequestor[String, GetOrCreateRes
     baseUrl / "get_or_create_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
-  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
+  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
 /**
  * get_datastore requestor
  */
-object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
-  def apply(token: AccessToken, dsid: String): GetOrCreateResult = executeReq(token, dsid)
+object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
+  def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
 
   private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
     require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
@@ -91,7 +103,7 @@ object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
     notFoundVerifyResponse(response)
   }
 
-  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
+  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
 /**

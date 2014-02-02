@@ -17,9 +17,9 @@ package dropbox4s.datastore
  */
 
 import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.jsons.{DsInfo, GetOrCreateResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsons.{DsInfo, GetOrCreateDatastoreResult, ListDatastoresResult}
 import dropbox4s.datastore.model.Datastore
-import dropbox4s.datastore.internal.http.{DeleteDatastoreRequestor, GetRequestor, ListDatastoresRequestor, GetOrCreateRequestor}
+import dropbox4s.datastore.internal.http.{DeleteDatastoreRequestor, GetDatastoreRequestor, ListDatastoresRequestor, GetOrCreateDatastoreRequestor}
 
 /**
  * @author mao.instantlife at gmail.com
@@ -29,8 +29,8 @@ object DatastoresApi {
   def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) = {
     require(Option(dsid).isDefined && !dsid.isEmpty)
 
-    if (createFlag) Datastore(dsid, Some(GetOrCreateRequestor(token, dsid)))
-    else Datastore(dsid, Some(GetRequestor(token, dsid)))
+    if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor(token, dsid)))
+    else Datastore(dsid, Some(GetDatastoreRequestor(token, dsid)))
   }
 
   val orCreate = true
@@ -49,5 +49,5 @@ object DatastoresApi {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor(token, dsInfo.handle)
   }
 
-  val nullGetOrCreateDsResult = GetOrCreateResult(null, 0, false)
+  val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
 }
