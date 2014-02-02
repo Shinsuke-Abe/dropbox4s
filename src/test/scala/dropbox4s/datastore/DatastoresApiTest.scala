@@ -14,6 +14,7 @@ class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
 
   implicit val token = TestConstants.testUser1
+  val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
 
   "get" should {
     "throw exception with null value" in {
@@ -24,10 +25,8 @@ class DatastoresApiTest extends Specification {
       get("") must throwA[IllegalArgumentException]
     }
 
-    val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
-    val testDsName = s"test_ds_${createTimeStamp}"
-
     "get Datastore result with orCreate flag" in {
+      val testDsName = s"test_ds_${createTimeStamp}"
       val createdDs = get(s"$testDsName", orCreate)
 
       createdDs.dsid must equalTo(s"$testDsName")
@@ -52,6 +51,15 @@ class DatastoresApiTest extends Specification {
     "throw exception not found datastore handle" in {
       Datastore("dsnotfound", Some(GetOrCreateResult("handlenotfound", 0))).delete must
         throwA[DropboxException](message = "No datastore was found for handle: u'handlenotfound'")
+    }
+
+    "DsInfo#delete method" in {
+      val testDsName = s"fordel_ds_${createTimeStamp}"
+
+      get(s"$testDsName", orCreate)
+
+      val forDeleteDsInfo = listDatastores.find(_.dsid == testDsName).get
+      forDeleteDsInfo.delete.ok must equalTo(s"Deleted datastore with handle: u'${forDeleteDsInfo.handle}'")
     }
   }
 }
