@@ -47,6 +47,16 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 
   protected def verifyResponse(response: JValue) {}
 
+  protected def notFoundVerifyResponse(response: JValue) {
+    val notfound = response findField {
+      case JField("notfound", _) => true
+      case _ => false
+    }
+
+    if(notfound.isDefined)
+      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
+  }
+
   protected def parseJsonToclass(response: JValue): ResType
 }
 
@@ -78,13 +88,7 @@ object GetRequestor extends DatastoreApiRequestor[String, GetOrCreateResult] {
   }
 
   override protected def verifyResponse(response: JValue) {
-    val notfound = response findField {
-      case JField("notfound", _) => true
-      case _ => false
-    }
-
-    if(notfound.isDefined)
-      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
+    notFoundVerifyResponse(response)
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateResult]
@@ -103,13 +107,7 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
   }
 
   override protected def verifyResponse(response: JValue) {
-    val notfound = response findField {
-      case JField("notfound", _) => true
-      case _ => false
-    }
-
-    if(notfound.isDefined)
-      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
+    notFoundVerifyResponse(response)
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
