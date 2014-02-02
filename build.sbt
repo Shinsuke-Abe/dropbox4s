@@ -6,6 +6,7 @@ scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.3.7" % "test",
+  "org.mockito" % "mockito-core" % "1.9.5" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
   "org.json4s" %% "json4s-native" % "3.2.6"
 )
