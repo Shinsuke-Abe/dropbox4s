@@ -30,7 +30,9 @@ import org.json4s.JValue
 trait DatastoreApiRequestor[ParamType, ResType] {
   implicit val format = DefaultFormats
 
-  val baseUrl = host("api.dropbox.com").secure / "1" / "datastores"
+  val endpoint: String
+
+  lazy val baseUrl = host("api.dropbox.com").secure / "1" / "datastores" / endpoint
 
   /**
    * Set authenticate header of OAuth2 for datastore api request header.
@@ -76,12 +78,14 @@ trait DatastoreApiRequestor[ParamType, ResType] {
  * get_or_create_datastore requestor
  */
 object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
+  val endpoint = "get_or_create_datastore"
+
   def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
 
   private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
     require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
 
-    baseUrl / "get_or_create_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
+    baseUrl << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
@@ -91,12 +95,14 @@ object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOr
  * get_datastore requestor
  */
 object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
+  val endpoint = "get_datastore"
+
   def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
 
   private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
     require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
 
-    baseUrl / "get_datastore" << Map("dsid" -> dsid) <:< authHeader(token)
+    baseUrl << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
   override protected def verifyResponse(response: JValue) {
@@ -110,12 +116,14 @@ object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDa
  * delete_datastore requestor
  */
 object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteDatastoreResult] {
+  val endpoint = "delete_datastore"
+
   def apply(token: AccessToken, handle: String):DeleteDatastoreResult = executeReq(token, handle)
 
   private[dropbox4s] def generateReq(token: AccessToken, handle: String) = {
     require(Option(handle).isDefined && !handle.isEmpty && Option(token).isDefined)
 
-    baseUrl / "delete_datastore" << Map("handle" -> handle) <:< authHeader(token)
+    baseUrl << Map("handle" -> handle) <:< authHeader(token)
   }
 
   override protected def verifyResponse(response: JValue) {
@@ -129,12 +137,14 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
  * list_datastores requestor
  */
 object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
+  val endpoint = "list_datastores"
+
   def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
   
   private[dropbox4s] def generateReq(token: AccessToken, input: Unit = ()) = {
     require(Option(token).isDefined)
 
-    baseUrl / "list_datastores" <:< authHeader(token)
+    baseUrl <:< authHeader(token)
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
