@@ -102,13 +102,13 @@ class DatastoreApiRequestorTest extends Specification {
   // datastore/list_datastores
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
-      ListDatastoresRequestor.generateReq(null) must throwA[IllegalArgumentException]
+      ListDatastoresRequestor.generateReq(null, ()) must throwA[IllegalArgumentException]
     }
 
     "url that is set authorization header" in {
-      val req = ListDatastoresRequestor.generateReq(testToken)
+      val req = ListDatastoresRequestor.generateReq(testToken, ())
 
-      req isDatastoresApi ("/list_datastores", "GET", testToken)
+      req isDatastoresApi ("/list_datastores", "POST", testToken)
     }
   }
 

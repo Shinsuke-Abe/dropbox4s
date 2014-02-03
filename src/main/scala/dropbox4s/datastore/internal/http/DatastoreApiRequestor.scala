@@ -32,6 +32,10 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 
   val endpoint: String
 
+  protected val notRequired = true
+
+  protected val noParams = Map.empty[String, String]
+
   lazy val baseUrl = host("api.dropbox.com").secure / "1" / "datastores" / endpoint
 
   /**
@@ -41,7 +45,20 @@ trait DatastoreApiRequestor[ParamType, ResType] {
    */
   protected def authHeader(token: AccessToken) = Map("Authorization" -> s"Bearer ${token.token}")
 
-  private[dropbox4s] def generateReq(token: AccessToken, input: ParamType): Req
+  /**
+   * Generate endpoint request.
+   * @param token Access token
+   * @param input decide in implements Requestor
+   * @return http request
+   */
+  private[dropbox4s] def generateReq(token: AccessToken, input: ParamType) = {
+    require(Option(token).isDefined && parameterRequirement(input))
+
+    baseUrl <:< authHeader(token) << requestParameter(input)
+  }
+
+  protected def parameterRequirement(input: ParamType): Boolean
+  protected def requestParameter(input: ParamType): Map[String, String]
 
   /**
    * Execute datastore api request.
@@ -84,13 +101,11 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
   val endpoint = "get_or_create_datastore"
 
+  protected def parameterRequirement(dsid: String) = Option(dsid).isDefined && !dsid.isEmpty
+
+  protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
+
   def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
-
-  private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
-    require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
-
-    baseUrl << Map("dsid" -> dsid) <:< authHeader(token)
-  }
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
@@ -101,13 +116,11 @@ object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOr
 object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDatastoreResult] {
   val endpoint = "get_datastore"
 
+  protected def parameterRequirement(dsid: String) = Option(dsid).isDefined && !dsid.isEmpty
+
+  protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
+
   def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
-
-  private[dropbox4s] def generateReq(token: AccessToken, dsid: String) = {
-    require(Option(dsid).isDefined && !dsid.isEmpty && Option(token).isDefined)
-
-    baseUrl << Map("dsid" -> dsid) <:< authHeader(token)
-  }
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
@@ -118,13 +131,11 @@ object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDa
 object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteDatastoreResult] {
   val endpoint = "delete_datastore"
 
+  protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
+
+  protected def requestParameter(handle: String) = Map("handle" -> handle)
+
   def apply(token: AccessToken, handle: String):DeleteDatastoreResult = executeReq(token, handle)
-
-  private[dropbox4s] def generateReq(token: AccessToken, handle: String) = {
-    require(Option(handle).isDefined && !handle.isEmpty && Option(token).isDefined)
-
-    baseUrl << Map("handle" -> handle) <:< authHeader(token)
-  }
 
   protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
 }
@@ -135,13 +146,11 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
 object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
   val endpoint = "list_datastores"
 
-  def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
-  
-  private[dropbox4s] def generateReq(token: AccessToken, input: Unit = ()) = {
-    require(Option(token).isDefined)
+  protected def parameterRequirement(input: Unit) = notRequired
 
-    baseUrl <:< authHeader(token)
-  }
+  protected def requestParameter(input: Unit) = noParams
+
+  def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
 
   protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
 }
