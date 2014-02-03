@@ -59,16 +59,20 @@ trait DatastoreApiRequestor[ParamType, ResType] {
     parseJsonToclass(response)
   }
 
-  protected def verifyResponse(response: JValue) {}
+  protected def verifyResponse(response: JValue) {
+    verifyErrorResponse("notfound", response)
+  }
 
-  protected def notFoundVerifyResponse(response: JValue) {
+  protected def verifyErrorResponse(errortype: String, response: JValue) {
     val notfound = response findField {
-      case JField("notfound", _) => true
+      case JField(key, _) if key == errortype => true
       case _ => false
     }
 
     if(notfound.isDefined)
-      notfound.get match { case JField("notfound", JString(message)) => throw DropboxException(message) }
+      notfound.get match {
+        case JField(key, JString(message)) if key == errortype => throw DropboxException(message)
+      }
   }
 
   protected def parseJsonToclass(response: JValue): ResType
@@ -105,10 +109,6 @@ object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDa
     baseUrl << Map("dsid" -> dsid) <:< authHeader(token)
   }
 
-  override protected def verifyResponse(response: JValue) {
-    notFoundVerifyResponse(response)
-  }
-
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
@@ -124,10 +124,6 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
     require(Option(handle).isDefined && !handle.isEmpty && Option(token).isDefined)
 
     baseUrl << Map("handle" -> handle) <:< authHeader(token)
-  }
-
-  override protected def verifyResponse(response: JValue) {
-    notFoundVerifyResponse(response)
   }
 
   protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
