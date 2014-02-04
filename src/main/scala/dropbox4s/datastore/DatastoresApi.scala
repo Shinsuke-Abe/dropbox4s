@@ -19,7 +19,13 @@ package dropbox4s.datastore
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsons.{DsInfo, GetOrCreateDatastoreResult, ListDatastoresResult}
 import dropbox4s.datastore.model.Datastore
-import dropbox4s.datastore.internal.http.{DeleteDatastoreRequestor, GetDatastoreRequestor, ListDatastoresRequestor, GetOrCreateDatastoreRequestor}
+import dropbox4s.datastore.internal.http._
+import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import scala.Some
+import dropbox4s.datastore.model.Datastore
+import dropbox4s.datastore.internal.jsons.DsInfo
+import dropbox4s.datastore.internal.jsons.ListDatastoresResult
 
 /**
  * @author mao.instantlife at gmail.com
@@ -43,6 +49,8 @@ object DatastoresApi {
 
   implicit class RichDataStore(val ds: Datastore) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, ds.handle)
+
+    def snapshot[T](implicit token: AccessToken, m: Manifest[T]) = new GetSnapshotRequestor[T].request(token, ds.handle)
   }
 
   implicit class RichDsInfo(val dsInfo: DsInfo) {

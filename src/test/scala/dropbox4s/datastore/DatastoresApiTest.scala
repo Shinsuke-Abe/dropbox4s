@@ -9,6 +9,7 @@ import java.util.Date
 import dropbox4s.commons.DropboxException
 import dropbox4s.datastore.model.Datastore
 import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import dropbox4s.datastore.internal.http.Dummy
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
@@ -37,6 +38,9 @@ class DatastoresApiTest extends Specification {
       // without orCreate flag
       get(s"$testDsName").created must beFalse
 
+      // get snapshots(rev 0, no rows)
+      createdDs.snapshot[Dummy].rows.isEmpty
+
       // delete datastore
       createdDs.delete.ok must equalTo(s"Deleted datastore with handle: u'${createdDs.handle}'")
       listDatastores.exists(_.dsid == testDsName) must beFalse
@@ -47,10 +51,13 @@ class DatastoresApiTest extends Specification {
     }
   }
 
+  // error case for api...
+  val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0)))
+  val messageNotFound = s"No datastore was found for handle: u'${notExistsDs.handle}'"
+
   "delete" should {
     "throw exception not found datastore handle" in {
-      Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0))).delete must
-        throwA[DropboxException](message = "No datastore was found for handle: u'handlenotfound'")
+      notExistsDs.delete must throwA[DropboxException](message = messageNotFound)
     }
 
     "DsInfo#delete method" in {
@@ -60,6 +67,12 @@ class DatastoresApiTest extends Specification {
 
       val forDeleteDsInfo = listDatastores.find(_.dsid == testDsName).get
       forDeleteDsInfo.delete.ok must equalTo(s"Deleted datastore with handle: u'${forDeleteDsInfo.handle}'")
+    }
+  }
+
+  "snapshot" should {
+    "throw exception not found datastore handle" in {
+      notExistsDs.snapshot[Dummy] must throwA[DropboxException](message = messageNotFound)
     }
   }
 }

@@ -43,7 +43,7 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "GerOrCreateDatastoreRequestor#apply" should {
+  "GerOrCreateDatastoreRequestor#request" should {
     "throw exception when unauth request is failed" in {
       GetOrCreateDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
@@ -68,7 +68,7 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "GerDatastoreRequestor#apply" should {
+  "GerDatastoreRequestor#request" should {
     "throw exception when unauth request is failed" in {
       GetDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
@@ -93,7 +93,7 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "DeleteDatastoreRequestor#apply" should {
+  "DeleteDatastoreRequestor#request" should {
     "throw exception when unauth request is failed" in {
       DeleteDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
@@ -112,7 +112,7 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "ListDatastoresRequestor#apply" should {
+  "ListDatastoresRequestor#request" should {
     "throw exception when unauth request is failed" in {
       ListDatastoresRequestor.request(testToken) must throwA[ExecutionException]
     }
@@ -134,6 +134,12 @@ class DatastoreApiRequestorTest extends Specification {
       req isDatastoresApi ("/get_snapshot", "POST", testToken)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
+    }
+  }
+
+  "GetSmnapshotRequestor#request" should {
+    "throw exception when unauth request is failed" in {
+      new GetSnapshotRequestor[Dummy].request(testToken, "notfoud-handle") must throwA[ExecutionException]
     }
   }
 
