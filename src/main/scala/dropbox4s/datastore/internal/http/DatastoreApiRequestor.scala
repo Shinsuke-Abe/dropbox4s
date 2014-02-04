@@ -23,6 +23,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
 import org.json4s.JValue
+import scala.Nothing
 
 /**
  * @author mao.instantlife at gmail.com
@@ -162,14 +163,14 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
 /**
  * list_datastores requestor
  */
-object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastoresResult] {
+object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatastoresResult] {
   val endpoint = "list_datastores"
 
-  protected def parameterRequirement(input: Unit) = notRequired
+  protected def parameterRequirement(input: AnyRef) = notRequired
 
-  protected def requestParameter(input: Unit) = noParams
+  protected def requestParameter(input: AnyRef) = noParams
 
-  def request(token: AccessToken): ListDatastoresResult = request(token, JNothing)
+  def request(token: AccessToken): ListDatastoresResult = request(token, null)
 
   protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
 }

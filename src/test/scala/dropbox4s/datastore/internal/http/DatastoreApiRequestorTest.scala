@@ -8,6 +8,7 @@ import org.specs2.mutable._
 import dropbox4s.datastore.auth.AccessToken
 import dispatch._
 import scala.concurrent.ExecutionException
+import dropbox4s.datastore.TestDummyData
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"
@@ -102,11 +103,11 @@ class DatastoreApiRequestorTest extends Specification {
   // datastore/list_datastores
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
-      ListDatastoresRequestor.generateReq(null, ()) must throwA[IllegalArgumentException]
+      ListDatastoresRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
     }
 
     "url that is set authorization header" in {
-      val req = ListDatastoresRequestor.generateReq(testToken, ())
+      val req = ListDatastoresRequestor.generateReq(testToken, null)
 
       req isDatastoresApi ("/list_datastores", "POST", testToken)
     }
@@ -121,15 +122,15 @@ class DatastoreApiRequestorTest extends Specification {
   // datastore/get_snapshot
   "GetSnapshotRequestor#generateReq" should {
     "throw exception when both parameter is null" in {
-      new GetSnapshotRequestor[Dummy].generateReq(null, null) must throwA[IllegalArgumentException]
+      new GetSnapshotRequestor[TestDummyData].generateReq(null, null) must throwA[IllegalArgumentException]
     }
 
     "throw exception when handle parameter is empty string" in {
-      new GetSnapshotRequestor[Dummy].generateReq(testToken, "") must throwA[IllegalArgumentException]
+      new GetSnapshotRequestor[TestDummyData].generateReq(testToken, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter handle and authorization header" in {
-      val req = new GetSnapshotRequestor[Dummy].generateReq(testToken, "test-handle")
+      val req = new GetSnapshotRequestor[TestDummyData].generateReq(testToken, "test-handle")
 
       req isDatastoresApi ("/get_snapshot", "POST", testToken)
       req.toRequest.getParams.size() must equalTo(1)
@@ -139,7 +140,7 @@ class DatastoreApiRequestorTest extends Specification {
 
   "GetSmnapshotRequestor#request" should {
     "throw exception when unauth request is failed" in {
-      new GetSnapshotRequestor[Dummy].request(testToken, "notfoud-handle") must throwA[ExecutionException]
+      new GetSnapshotRequestor[TestDummyData].request(testToken, "notfoud-handle") must throwA[ExecutionException]
     }
   }
 
@@ -160,5 +161,3 @@ class DatastoreApiRequestorTest extends Specification {
 //    }
 //  }
 }
-
-case class Dummy(dummykey: String)

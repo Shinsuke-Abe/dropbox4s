@@ -13,6 +13,7 @@ import scala.Some
 import dropbox4s.datastore.internal.jsons.DsInfo
 import dropbox4s.datastore.internal.jsons.ListDatastoresResult
 import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import dropbox4s.datastore.TestDummyData
 
 class JsonConversionTest extends Specification {
   implicit val format = DefaultFormats
@@ -77,9 +78,9 @@ class JsonConversionTest extends Specification {
           | }
           | """.stripMargin)
 
-      testResult.extract[SnapshotResult[TestData]] must equalTo(
+      testResult.extract[SnapshotResult[TestDummyData]] must equalTo(
         SnapshotResult(
-          List(Row("default", "1", TestData("testvalue1")), Row("default", "2", TestData("testvalue2"))),
+          List(Row("default", "1", TestDummyData("testvalue1")), Row("default", "2", TestDummyData("testvalue2"))),
           0))
     }
 
@@ -104,5 +105,3 @@ class JsonConversionTest extends Specification {
     }
   }
 }
-
-case class TestData(test: String)
