@@ -118,6 +118,25 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
+  // datastore/get_snapshot
+  "GetSnapshotRequestor#generateReq" should {
+    "throw exception when both parameter is null" in {
+      new GetSnapshotRequestor[Dummy].generateReq(null, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when handle parameter is empty string" in {
+      new GetSnapshotRequestor[Dummy].generateReq(testToken, "") must throwA[IllegalArgumentException]
+    }
+
+    "url that is set post parameter handle and authorization header" in {
+      val req = new GetSnapshotRequestor[Dummy].generateReq(testToken, "test-handle")
+
+      req isDatastoresApi ("/get_snapshot", "POST", testToken)
+      req.toRequest.getParams.size() must equalTo(1)
+      req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
+    }
+  }
+
   // the follow test is specification test.
 //  "RequestNotFound" should {
 //    "throw exception not found url" in {
@@ -135,3 +154,5 @@ class DatastoreApiRequestorTest extends Specification {
 //    }
 //  }
 }
+
+case class Dummy(dummykey: String)

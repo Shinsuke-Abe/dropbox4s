@@ -18,7 +18,7 @@ package dropbox4s.datastore.internal.http
 
 import dropbox4s.datastore.auth.AccessToken
 import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsons.{DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsons.{SnapshotResult, DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
@@ -153,4 +153,16 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastore
   def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
 
   protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
+}
+
+class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, SnapshotResult[T]] {
+  val endpoint = "get_snapshot"
+
+  protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
+
+  protected def requestParameter(handle: String) = Map("handle" -> handle)
+
+  def apply(token: AccessToken, handle: String):SnapshotResult[T] = executeReq(token, handle)
+
+  protected def parseJsonToclass(response: JValue) = response.extract[SnapshotResult[T]]
 }
