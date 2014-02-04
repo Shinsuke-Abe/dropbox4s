@@ -45,7 +45,7 @@ class DatastoreApiRequestorTest extends Specification {
 
   "GerOrCreateDatastoreRequestor#apply" should {
     "throw exception when unauth request is failed" in {
-      GetOrCreateDatastoreRequestor(testToken, "failed-request") must throwA[ExecutionException]
+      GetOrCreateDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -70,7 +70,7 @@ class DatastoreApiRequestorTest extends Specification {
 
   "GerDatastoreRequestor#apply" should {
     "throw exception when unauth request is failed" in {
-      GetDatastoreRequestor(testToken, "failed-request") must throwA[ExecutionException]
+      GetDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -95,7 +95,7 @@ class DatastoreApiRequestorTest extends Specification {
 
   "DeleteDatastoreRequestor#apply" should {
     "throw exception when unauth request is failed" in {
-      DeleteDatastoreRequestor(testToken, "failed-request") must throwA[ExecutionException]
+      DeleteDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -114,7 +114,7 @@ class DatastoreApiRequestorTest extends Specification {
 
   "ListDatastoresRequestor#apply" should {
     "throw exception when unauth request is failed" in {
-      ListDatastoresRequestor(testToken) must throwA[ExecutionException]
+      ListDatastoresRequestor.request(testToken) must throwA[ExecutionException]
     }
   }
 

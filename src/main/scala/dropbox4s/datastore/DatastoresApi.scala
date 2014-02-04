@@ -29,24 +29,24 @@ object DatastoresApi {
   def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) = {
     require(Option(dsid).isDefined && !dsid.isEmpty)
 
-    if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor(token, dsid)))
-    else Datastore(dsid, Some(GetDatastoreRequestor(token, dsid)))
+    if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor.request(token, dsid)))
+    else Datastore(dsid, Some(GetDatastoreRequestor.request(token, dsid)))
   }
 
   val orCreate = true
 
-  def listDatastores(implicit token: AccessToken) = ListDatastoresRequestor(token)
+  def listDatastores(implicit token: AccessToken) = ListDatastoresRequestor.request(token)
 
   implicit def listDatastoresToList(list: ListDatastoresResult) = list.datastores
 
   implicit def datastoresToGetOrCreateResult(ds: Datastore) = ds.result.getOrElse(nullGetOrCreateDsResult)
 
   implicit class RichDataStore(val ds: Datastore) {
-    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor(token, ds.handle)
+    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, ds.handle)
   }
 
   implicit class RichDsInfo(val dsInfo: DsInfo) {
-    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor(token, dsInfo.handle)
+    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

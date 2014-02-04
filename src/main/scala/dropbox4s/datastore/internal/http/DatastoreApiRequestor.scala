@@ -48,7 +48,7 @@ trait DatastoreApiRequestor[ParamType, ResType] {
   /**
    * Generate endpoint request.
    * @param token Access token
-   * @param input decide in implements Requestor
+   * @param input decide by implements Requestor
    * @return http request
    */
   private[dropbox4s] def generateReq(token: AccessToken, input: ParamType) = {
@@ -57,17 +57,30 @@ trait DatastoreApiRequestor[ParamType, ResType] {
     baseUrl <:< authHeader(token) << requestParameter(input)
   }
 
+  /**
+   * Defined endpoint parameter requirement.
+   *
+   * @param input decide by implements Requestor
+   * @return satisfy requrement is true, not sataify is false
+   */
   protected def parameterRequirement(input: ParamType): Boolean
+
+  /**
+   * Mapping input parameter to endpoint.
+   *
+   * @param input decide by implements Requestor
+   * @return parameter mapping
+   */
   protected def requestParameter(input: ParamType): Map[String, String]
 
   /**
-   * Execute datastore api request.
+   * Request to datastore api endpoint.
    *
    * @param token Access token
-   * @param input decide in implements Requestor
-   * @return decide in implements Requestor
+   * @param input decide by implements Requestor
+   * @return decide by implements Requestor
    */
-  protected def executeReq(token: AccessToken, input: ParamType): ResType = {
+  def request(token: AccessToken, input: ParamType): ResType = {
     val request = Http(generateReq(token, input) OK as.String)
     val response = parse(request())
 
@@ -76,10 +89,22 @@ trait DatastoreApiRequestor[ParamType, ResType] {
     parseJsonToclass(response)
   }
 
+  /**
+   * Verify datastore api response.
+   * Not found response or conflict response are default checked by this method.
+   *
+   * @param response
+   */
   protected def verifyResponse(response: JValue) {
     verifyErrorResponse("notfound", response)
   }
 
+  /**
+   * Veriry error response type.
+   *
+   * @param errortype key name of error response
+   * @param response api response
+   */
   protected def verifyErrorResponse(errortype: String, response: JValue) {
     val notfound = response findField {
       case JField(key, _) if key == errortype => true
@@ -105,8 +130,6 @@ object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOr
 
   protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
 
-  def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
-
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
@@ -119,8 +142,6 @@ object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDa
   protected def parameterRequirement(dsid: String) = Option(dsid).isDefined && !dsid.isEmpty
 
   protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
-
-  def apply(token: AccessToken, dsid: String): GetOrCreateDatastoreResult = executeReq(token, dsid)
 
   protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
@@ -135,8 +156,6 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
 
   protected def requestParameter(handle: String) = Map("handle" -> handle)
 
-  def apply(token: AccessToken, handle: String):DeleteDatastoreResult = executeReq(token, handle)
-
   protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
 }
 
@@ -150,7 +169,7 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[Unit, ListDatastore
 
   protected def requestParameter(input: Unit) = noParams
 
-  def apply(token: AccessToken, input: Unit = ()): ListDatastoresResult = executeReq(token, input)
+  def request(token: AccessToken): ListDatastoresResult = request(token, JNothing)
 
   protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
 }
@@ -161,8 +180,6 @@ class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, Sn
   protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
 
   protected def requestParameter(handle: String) = Map("handle" -> handle)
-
-  def apply(token: AccessToken, handle: String):SnapshotResult[T] = executeReq(token, handle)
 
   protected def parseJsonToclass(response: JValue) = response.extract[SnapshotResult[T]]
 }
