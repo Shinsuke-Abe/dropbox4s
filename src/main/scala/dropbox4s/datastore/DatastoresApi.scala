@@ -55,6 +55,8 @@ object DatastoresApi {
 
   implicit class RichDsInfo(val dsInfo: DsInfo) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
+
+    def snapshot[T](implicit token: AccessToken, m: Manifest[T]) = new GetSnapshotRequestor[T].request(token, dsInfo.handle)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
