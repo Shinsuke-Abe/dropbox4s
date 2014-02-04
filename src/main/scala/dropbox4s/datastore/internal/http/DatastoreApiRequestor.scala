@@ -23,7 +23,6 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException
 import org.json4s.JValue
-import scala.Nothing
 
 /**
  * @author mao.instantlife at gmail.com
