@@ -1,4 +1,4 @@
-package dropbox4s.datastore.internal.jsons
+package dropbox4s.datastore.internal.jsonresponse
 
 /*
  * Copyright (C) 2014 Shinsuke Abe

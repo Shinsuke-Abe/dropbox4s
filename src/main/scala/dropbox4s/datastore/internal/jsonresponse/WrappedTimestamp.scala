@@ -1,4 +1,4 @@
-package dropbox4s.datastore.internal.jsons
+package dropbox4s.datastore.internal.jsonresponse
 
 /*
  * Copyright (C) 2014 Shinsuke Abe
@@ -19,4 +19,4 @@ package dropbox4s.datastore.internal.jsons
 /**
  * @author mao.instantlife at gmail.com
  */
-case class SnapshotResult[T](rows: List[Row[T]], rev: Int)
+case class WrappedTimestamp(T: String)

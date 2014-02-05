@@ -18,11 +18,11 @@ package dropbox4s.datastore
 
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 import scala.Some
 import dropbox4s.datastore.model.Datastore
-import dropbox4s.datastore.internal.jsons.DsInfo
-import dropbox4s.datastore.internal.jsons.ListDatastoresResult
+import dropbox4s.datastore.internal.jsonresponse.DsInfo
+import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
 
 /**
  * @author mao.instantlife at gmail.com

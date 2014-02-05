@@ -8,7 +8,7 @@ import org.specs2.mutable._
 import java.util.Date
 import dropbox4s.commons.DropboxException
 import dropbox4s.datastore.model.Datastore
-import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._

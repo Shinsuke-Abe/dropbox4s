@@ -18,7 +18,7 @@ package dropbox4s.datastore.internal.http
 
 import dropbox4s.datastore.auth.AccessToken
 import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsons.{SnapshotResult, DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsonresponse.{SnapshotResult, DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import dropbox4s.commons.DropboxException

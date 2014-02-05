@@ -16,7 +16,7 @@ package dropbox4s.datastore.model
  * limitations under the License.
  */
 
-import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
+import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 
 /**
  * @author mao.instantlife at gmail.com
