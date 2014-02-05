@@ -106,15 +106,13 @@ trait DatastoreApiRequestor[ParamType, ResType] {
    * @param response api response
    */
   protected def verifyErrorResponse(errortype: String, response: JValue) {
-    val notfound = response findField {
+    response findField {
       case JField(key, _) if key == errortype => true
       case _ => false
+    } match {
+      case Some(JField(_, JString(message))) => throw DropboxException(message)
+      case None =>
     }
-
-    if(notfound.isDefined)
-      notfound.get match {
-        case JField(key, JString(message)) if key == errortype => throw DropboxException(message)
-      }
   }
 
   private def parseJsonToclass(response: JValue)(implicit m: Manifest[ResType]) = response.extract[ResType]
@@ -166,6 +164,9 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatasto
   def request(token: AccessToken): ListDatastoresResult = request(token, null)
 }
 
+/**
+ * get_snapshot requestor
+ */
 class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, SnapshotResult[T]] {
   val endpoint = "get_snapshot"
 

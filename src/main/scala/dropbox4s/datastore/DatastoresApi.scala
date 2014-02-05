@@ -16,9 +16,6 @@ package dropbox4s.datastore
  * limitations under the License.
  */
 
-import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.jsons.{DsInfo, GetOrCreateDatastoreResult, ListDatastoresResult}
-import dropbox4s.datastore.model.Datastore
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsons.GetOrCreateDatastoreResult
@@ -32,12 +29,9 @@ import dropbox4s.datastore.internal.jsons.ListDatastoresResult
  */
 object DatastoresApi {
 
-  def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) = {
-    require(Option(dsid).isDefined && !dsid.isEmpty)
-
+  def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) =
     if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor.request(token, dsid)))
     else Datastore(dsid, Some(GetDatastoreRequestor.request(token, dsid)))
-  }
 
   val orCreate = true
 
