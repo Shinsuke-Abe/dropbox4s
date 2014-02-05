@@ -80,7 +80,7 @@ trait DatastoreApiRequestor[ParamType, ResType] {
    * @param input decide by implements Requestor
    * @return decide by implements Requestor
    */
-  def request(token: AccessToken, input: ParamType): ResType = {
+  def request(token: AccessToken, input: ParamType)(implicit m: Manifest[ResType]): ResType = {
     val request = Http(generateReq(token, input) OK as.String)
     val response = parse(request())
 
@@ -117,7 +117,7 @@ trait DatastoreApiRequestor[ParamType, ResType] {
       }
   }
 
-  protected def parseJsonToclass(response: JValue): ResType
+  private def parseJsonToclass(response: JValue)(implicit m: Manifest[ResType]) = response.extract[ResType]
 }
 
 /**
@@ -129,8 +129,6 @@ object GetOrCreateDatastoreRequestor extends DatastoreApiRequestor[String, GetOr
   protected def parameterRequirement(dsid: String) = Option(dsid).isDefined && !dsid.isEmpty
 
   protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
-
-  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
 /**
@@ -142,8 +140,6 @@ object GetDatastoreRequestor extends DatastoreApiRequestor[String, GetOrCreateDa
   protected def parameterRequirement(dsid: String) = Option(dsid).isDefined && !dsid.isEmpty
 
   protected def requestParameter(dsid: String) = Map("dsid" -> dsid)
-
-  protected def parseJsonToclass(response: JValue) = response.extract[GetOrCreateDatastoreResult]
 }
 
 /**
@@ -155,8 +151,6 @@ object DeleteDatastoreRequestor extends DatastoreApiRequestor[String, DeleteData
   protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
 
   protected def requestParameter(handle: String) = Map("handle" -> handle)
-
-  protected def parseJsonToclass(response: JValue) = response.extract[DeleteDatastoreResult]
 }
 
 /**
@@ -170,8 +164,6 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatasto
   protected def requestParameter(input: AnyRef) = noParams
 
   def request(token: AccessToken): ListDatastoresResult = request(token, null)
-
-  protected def parseJsonToclass(response: JValue) = response.extract[ListDatastoresResult]
 }
 
 class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, SnapshotResult[T]] {
@@ -180,6 +172,4 @@ class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, Sn
   protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
 
   protected def requestParameter(handle: String) = Map("handle" -> handle)
-
-  protected def parseJsonToclass(response: JValue) = response.extract[SnapshotResult[T]]
 }
