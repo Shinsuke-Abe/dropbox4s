@@ -6,9 +6,14 @@ package dropbox4s.datastore
 
 import org.specs2.mutable._
 import java.util.Date
+import dropbox4s.datastore.model.{Snapshot, Datastore}
+import org.json4s.native.JsonMethods._
+import org.json4s._
+import org.json4s.JsonDSL._
+import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.model.Datastore
 import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
+import scala.Some
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
@@ -42,7 +47,6 @@ class DatastoresApiTest extends Specification {
       get(s"$testDsName").created must beFalse
 
       // get snapshots(rev 0, no rows)
-//      createdDs.snapshot.rows.isEmpty must beTrue
       val testSnapshot = createdDs.snapshot
       testSnapshot.handle must equalTo(createdDs.handle)
       testSnapshot.tableNames must equalTo(List.empty)
@@ -79,6 +83,33 @@ class DatastoresApiTest extends Specification {
   "snapshot" should {
     "throw exception not found datastore handle" in {
       notExistsDs.snapshot must throwA[DropboxException](message = messageNotFound)
+    }
+  }
+
+  "Snapshot#table" should {
+    "get table rows list with row data type" in {
+      implicit val format = DefaultFormats
+
+      val testResult = parse(
+        """
+          | {
+          |   "rev": 0,
+          |   "rows": [
+          |     {"tid": "default", "rowid": "1", "data": {"test": "testvalue1"}},
+          |     {"tid": "default", "rowid": "2", "data": {"test": "testvalue2"}},
+          |     {"tid": "nottarget", "rowid": "1", "data": {"key1": "testvalue1", "key2": 2}}
+          |   ]
+          | }
+          | """.stripMargin).extract[SnapshotResult[JValue]]
+
+      val testTable = Snapshot("test-handle", testResult).table("default") { data: TestDummyData =>
+        ("test" -> data.test)
+      }
+
+      testTable.handle must equalTo("test-handle")
+      testTable.tid must equalTo("default")
+      testTable.rev must equalTo(0)
+      testTable.rows.size must equalTo(2)
     }
   }
 }
