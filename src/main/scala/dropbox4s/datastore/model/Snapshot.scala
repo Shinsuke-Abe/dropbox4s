@@ -7,7 +7,7 @@ import org.json4s.DefaultFormats
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Snapshot(handle: String, result: SnapshotResult[JValue]) {
+case class Snapshot(handle: String, result: SnapshotResult) {
   implicit val format = DefaultFormats
 
   def tableNames = result.rows.map(_.tid).distinct

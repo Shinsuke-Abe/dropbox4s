@@ -16,9 +16,11 @@ package dropbox4s.datastore.internal.jsonresponse
  * limitations under the License.
  */
 
+import org.json4s.JsonAST.JValue
+
 /**
  * @author mao.instantlife at gmail.com
  */
-case class SnapshotResult[T](rows: List[Row[T]], rev: Int)
+case class SnapshotResult(rows: List[Row], rev: Int)
 
-case class Row[T](tid: String, rowid: String, data: T)
+case class Row(tid: String, rowid: String, data: JValue)

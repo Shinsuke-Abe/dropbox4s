@@ -66,24 +66,6 @@ class JsonConversionTest extends Specification {
   }
 
   "get_snapshot_result" should {
-    "json convert to SnapshotResult with concrete result type on data" in {
-      val testResult = parse(
-        """
-          | {
-          |   "rev": 0,
-          |   "rows": [
-          |     {"tid": "default", "rowid": "1", "data": {"test": "testvalue1"}},
-          |     {"tid": "default", "rowid": "2", "data": {"test": "testvalue2"}}
-          |   ]
-          | }
-          | """.stripMargin)
-
-      testResult.extract[SnapshotResult[TestDummyData]] must equalTo(
-        SnapshotResult(
-          List(Row("default", "1", TestDummyData("testvalue1")), Row("default", "2", TestDummyData("testvalue2"))),
-          0))
-    }
-
     "json convert to SnapshotResult with raw json result on data" in {
       val testResult = parse(
         """
@@ -98,7 +80,7 @@ class JsonConversionTest extends Specification {
       val data1 = parse("""{"test": "testvalue1"}""")
       val data2 = parse("""{"test": "testvalue2"}""")
 
-      testResult.extract[SnapshotResult[JValue]] must equalTo(
+      testResult.extract[SnapshotResult] must equalTo(
         SnapshotResult(
           List(Row("default", "1", data1), Row("default", "2", data2)),
           0))

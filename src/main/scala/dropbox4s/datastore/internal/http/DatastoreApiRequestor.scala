@@ -174,7 +174,7 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatasto
 /**
  * get_snapshot requestor
  */
-object GetSnapshotRequestor extends DatastoreApiRequestor[String, SnapshotResult[JValue]] {
+object GetSnapshotRequestor extends DatastoreApiRequestor[String, SnapshotResult] {
   val endpoint = "get_snapshot"
 
   protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty

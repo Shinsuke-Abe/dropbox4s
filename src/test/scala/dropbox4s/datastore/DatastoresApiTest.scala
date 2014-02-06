@@ -100,7 +100,7 @@ class DatastoresApiTest extends Specification {
           |     {"tid": "nottarget", "rowid": "1", "data": {"key1": "testvalue1", "key2": 2}}
           |   ]
           | }
-          | """.stripMargin).extract[SnapshotResult[JValue]]
+          | """.stripMargin).extract[SnapshotResult]
 
       val testTable = Snapshot("test-handle", testResult).table("default") { data: TestDummyData =>
         ("test" -> data.test)
