@@ -6,7 +6,7 @@ package dropbox4s.datastore
 
 import org.specs2.mutable._
 import java.util.Date
-import dropbox4s.datastore.model.{TableRow, Snapshot, Datastore}
+import dropbox4s.datastore.model.{Table, TableRow, Snapshot, Datastore}
 import org.json4s.native.JsonMethods._
 import org.json4s._
 import org.json4s.JsonDSL._
@@ -24,6 +24,9 @@ class DatastoresApiTest extends Specification {
   val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0)))
   val messageNotFound = s"No datastore was found for handle: u'${notExistsDs.handle}'"
   def deleteOkMessage(handle: String) = s"Deleted datastore with handle: u'${handle}'"
+
+  val dummyJsonGenerator: (TestDummyData) => JValue = (data) => ("test" -> data.test)
+  val insertRow = TableRow("new-row-id", TestDummyData("test value"))
 
   "get" should {
     "throw exception with null value" in {
@@ -47,7 +50,6 @@ class DatastoresApiTest extends Specification {
       get(s"$testDsName").created must beFalse
 
       // get snapshots(rev 0, no rows)
-      val dummyJsonGenerator: (TestDummyData) => JValue = (data) => ("test" -> data.test)
       val testSnapshot = createdDs.snapshot
       testSnapshot.handle must equalTo(createdDs.handle)
       testSnapshot.tableNames must equalTo(List.empty)
@@ -55,8 +57,8 @@ class DatastoresApiTest extends Specification {
       val table = testSnapshot.table("test-table")(dummyJsonGenerator)
 
       // insert data
-      val insertRow = TableRow("new-row-id", TestDummyData("test value"))
       table.insert(insertRow)
+      table.insert(insertRow) must throwA[DropboxException](message = "Conflict")
 
       // check inserted data
       val insertedSnapshot = get(s"${testDsName}").snapshot
@@ -126,6 +128,13 @@ class DatastoresApiTest extends Specification {
       testTable.tid must equalTo("default")
       testTable.rev must equalTo(0)
       testTable.rows.size must equalTo(2)
+    }
+  }
+
+  "insert" should {
+    "throw exception not found datastore handle" in {
+      val notFoundTable = Table[TestDummyData]("handlenotfound", "not-found-table", 0, dummyJsonGenerator, List.empty)
+      notFoundTable.insert(insertRow) must throwA[DropboxException](message = messageNotFound)
     }
   }
 }

@@ -104,6 +104,7 @@ trait DatastoreApiRequestor[ParamType, ResType] {
    */
   protected def verifyResponse(response: JValue) {
     verifyErrorResponse("notfound", response)
+    verifyErrorResponse("conflict", response)
   }
 
   /**
