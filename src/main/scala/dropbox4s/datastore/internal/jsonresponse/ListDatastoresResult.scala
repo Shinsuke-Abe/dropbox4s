@@ -20,3 +20,9 @@ package dropbox4s.datastore.internal.jsonresponse
  * @author mao.instantlife at gmail.com
  */
 case class ListDatastoresResult(datastores: List[DsInfo], token: String)
+
+case class DsInfo(dsid: String, handle: String, rev: Int, info: Option[InfoDict] = None)
+
+case class InfoDict(title: String, mtime: WrappedTimestamp)
+
+case class WrappedTimestamp(T: String)

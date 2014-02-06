@@ -20,3 +20,5 @@ package dropbox4s.datastore.internal.jsonresponse
  * @author mao.instantlife at gmail.com
  */
 case class SnapshotResult[T](rows: List[Row[T]], rev: Int)
+
+case class Row[T](tid: String, rowid: String, data: T)
