@@ -6,7 +6,7 @@ package dropbox4s.datastore
 
 import org.specs2.mutable._
 import java.util.Date
-import dropbox4s.datastore.model.{Snapshot, Datastore}
+import dropbox4s.datastore.model.{TableRow, Snapshot, Datastore}
 import org.json4s.native.JsonMethods._
 import org.json4s._
 import org.json4s.JsonDSL._
@@ -47,9 +47,25 @@ class DatastoresApiTest extends Specification {
       get(s"$testDsName").created must beFalse
 
       // get snapshots(rev 0, no rows)
+      val dummyJsonGenerator: (TestDummyData) => JValue = (data) => ("test" -> data.test)
       val testSnapshot = createdDs.snapshot
       testSnapshot.handle must equalTo(createdDs.handle)
       testSnapshot.tableNames must equalTo(List.empty)
+
+      val table = testSnapshot.table("test-table")(dummyJsonGenerator)
+
+      // insert data
+      val insertRow = TableRow("new-row-id", TestDummyData("test value"))
+      table.insert(insertRow)
+
+      // check inserted data
+      val insertedSnapshot = get(s"${testDsName}").snapshot
+
+      insertedSnapshot.tableNames must equalTo(List("test-table"))
+
+      val insertedTable = insertedSnapshot.table("test-table")(dummyJsonGenerator)
+
+      insertedTable.rows must equalTo(List(insertRow))
 
       // delete datastore
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))

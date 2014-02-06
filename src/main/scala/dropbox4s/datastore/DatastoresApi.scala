@@ -20,9 +20,10 @@ import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 import scala.Some
-import dropbox4s.datastore.model.{Snapshot, Datastore}
+import dropbox4s.datastore.model.{TableRow, Table, Snapshot, Datastore}
 import dropbox4s.datastore.internal.jsonresponse.DsInfo
 import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
+import dropbox4s.datastore.internal.requestparameter.{DataInsert, PutDeltaParameter}
 
 /**
  * @author mao.instantlife at gmail.com
@@ -51,6 +52,17 @@ object DatastoresApi {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
 
     def snapshot(implicit token: AccessToken) = Snapshot(dsInfo.handle, GetSnapshotRequestor.request(token, dsInfo.handle))
+  }
+
+  implicit class RichTable[T](val table: Table[T]) {
+    def insert(row: TableRow[T])(implicit token: AccessToken) = {
+      val parameter = PutDeltaParameter(
+        table.handle,
+        table.rev,
+        None,
+        List(DataInsert(table.tid, row.rowid, table.generator(row.data))))
+      PutDeltaRequestor.request(token, parameter)
+    }
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
