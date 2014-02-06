@@ -5,10 +5,14 @@ package dropbox4s.datastore.internal.http
  */
 
 import org.specs2.mutable._
-import dropbox4s.datastore.auth.AccessToken
-import dispatch._
 import scala.concurrent.ExecutionException
+import org.json4s._
+import org.json4s.JsonDSL._
 import dropbox4s.datastore.TestDummyData
+import dispatch.Req
+import dropbox4s.datastore.internal.requestparameter.DataInsert
+import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.datastore.internal.requestparameter.PutDeltaParameter
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"
@@ -22,6 +26,12 @@ class DatastoreApiRequestorTest extends Specification {
       req.url must equalTo(s"${baseUrl}${endpoints}")
       req.toRequest.getMethod must equalTo(method)
       req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(token))
+    }
+  }
+
+  "DatastoreApiRequestor#request" should {
+    "throw exception when unauth request is failed" in {
+      GetOrCreateDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -44,12 +54,6 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "GerOrCreateDatastoreRequestor#request" should {
-    "throw exception when unauth request is failed" in {
-      GetOrCreateDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
-    }
-  }
-
   // datastores/get_datastore
   "GerDatastoreRequestor#generateReq" should {
     "throw exception when both parameter is null" in {
@@ -66,12 +70,6 @@ class DatastoreApiRequestorTest extends Specification {
       req isDatastoresApi ("/get_datastore", "POST", testToken)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("dsid").get(0) must equalTo("test-datastore")
-    }
-  }
-
-  "GerDatastoreRequestor#request" should {
-    "throw exception when unauth request is failed" in {
-      GetDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -94,12 +92,6 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "DeleteDatastoreRequestor#request" should {
-    "throw exception when unauth request is failed" in {
-      DeleteDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
-    }
-  }
-
   // datastore/list_datastores
   "ListDatastoresRequestor#generateReq" should {
     "throw exception when access token is null" in {
@@ -113,24 +105,18 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "ListDatastoresRequestor#request" should {
-    "throw exception when unauth request is failed" in {
-      ListDatastoresRequestor.request(testToken) must throwA[ExecutionException]
-    }
-  }
-
   // datastore/get_snapshot
   "GetSnapshotRequestor#generateReq" should {
     "throw exception when both parameter is null" in {
-      new GetSnapshotRequestor[TestDummyData].generateReq(null, null) must throwA[IllegalArgumentException]
+      GetSnapshotRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
     }
 
     "throw exception when handle parameter is empty string" in {
-      new GetSnapshotRequestor[TestDummyData].generateReq(testToken, "") must throwA[IllegalArgumentException]
+      GetSnapshotRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter handle and authorization header" in {
-      val req = new GetSnapshotRequestor[TestDummyData].generateReq(testToken, "test-handle")
+      val req = GetSnapshotRequestor.generateReq(testToken, "test-handle")
 
       req isDatastoresApi ("/get_snapshot", "POST", testToken)
       req.toRequest.getParams.size() must equalTo(1)
@@ -138,9 +124,50 @@ class DatastoreApiRequestorTest extends Specification {
     }
   }
 
-  "GetSmnapshotRequestor#request" should {
-    "throw exception when unauth request is failed" in {
-      new GetSnapshotRequestor[TestDummyData].request(testToken, "notfoud-handle") must throwA[ExecutionException]
+  // datastore/put_delta
+  "PutDeltaRequestor#generateReq" should {
+    implicit val exportJson: TestDummyData => JValue = (data) => ("test" -> data.test)
+    val dummyData = TestDummyData("test-data")
+
+    val insert = DataInsert("test-table", "testrecord", dummyData)
+    val params = PutDeltaParameter("test-handle", 0, None, List(insert))
+
+    "throw exception when both parameter is null" in {
+      PutDeltaRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when change list parameter is null" in {
+      PutDeltaRequestor.generateReq(testToken, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when handle of change list parameter is null" in {
+      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter(null, 0, None, List(insert))) must
+      throwA[IllegalArgumentException]
+    }
+
+    "throw exception when handle of change list parameter is empty string" in {
+      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("", 0, None, List(insert))) must
+      throwA[IllegalArgumentException]
+    }
+
+    "throw exception when change list is null" in {
+      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("test-handle", 0, None, null)) must
+      throwA[IllegalArgumentException]
+    }
+
+    "throw exception when change list is null" in {
+      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("test-handle", 0, None, List.empty)) must
+      throwA[IllegalArgumentException]
+    }
+
+    "url that is set post parameter handle and authorization header" in {
+      val req = PutDeltaRequestor.generateReq(testToken, params)
+
+      req isDatastoresApi ("/put_delta", "POST", testToken)
+      req.toRequest.getParams.size() must equalTo(3)
+      req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
+      req.toRequest.getParams.get("rev").get(0) must equalTo("0")
+      req.toRequest.getParams.get("changes").get(0) must equalTo("""[["I","test-table","testrecord",{"test":"test-data"}]]""")
     }
   }
 

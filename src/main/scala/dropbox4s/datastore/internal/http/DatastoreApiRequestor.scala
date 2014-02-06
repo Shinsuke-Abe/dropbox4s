@@ -16,13 +16,20 @@ package dropbox4s.datastore.internal.http
  * limitations under the License.
  */
 
-import dropbox4s.datastore.auth.AccessToken
 import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsonresponse.{SnapshotResult, DeleteDatastoreResult, GetOrCreateDatastoreResult, ListDatastoresResult}
+import dropbox4s.datastore.internal.jsonresponse._
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import dropbox4s.commons.DropboxException
+import org.json4s.JsonDSL._
 import org.json4s.JValue
+import dropbox4s.datastore.internal.jsonresponse.DeleteDatastoreResult
+import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
+import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
+import dropbox4s.datastore.internal.requestparameter.PutDeltaParameter
+import scala.Some
+import dropbox4s.commons.DropboxException
+import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 
 /**
  * @author mao.instantlife at gmail.com
@@ -167,10 +174,33 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatasto
 /**
  * get_snapshot requestor
  */
-class GetSnapshotRequestor[T: Manifest] extends DatastoreApiRequestor[String, SnapshotResult[T]] {
+object GetSnapshotRequestor extends DatastoreApiRequestor[String, SnapshotResult[JValue]] {
   val endpoint = "get_snapshot"
 
   protected def parameterRequirement(handle: String) = Option(handle).isDefined && !handle.isEmpty
 
   protected def requestParameter(handle: String) = Map("handle" -> handle)
+}
+
+/**
+ * put_delta requestor
+ */
+object PutDeltaRequestor extends DatastoreApiRequestor[PutDeltaParameter, PutDeltaResult] {
+  val endpoint = "put_delta"
+
+  protected def parameterRequirement(input: PutDeltaParameter) =
+    Option(input).isDefined &&
+      Option(input.handle).isDefined && !input.handle.isEmpty &&
+      Option(input.list_of_changes).isDefined && !input.list_of_changes.isEmpty
+
+  protected def requestParameter(input: PutDeltaParameter) = {
+    val parameter = Map(
+      "handle" -> input.handle,
+      "rev" -> input.rev.toString,
+      "changes" -> compact(render(input.changeDeltas))
+    )
+
+    if(input.nonce.isDefined) parameter + ("nonce" -> input.nonce.get)
+    else parameter
+  }
 }

@@ -44,13 +44,13 @@ object DatastoresApi {
   implicit class RichDataStore(val ds: Datastore) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, ds.handle)
 
-    def snapshot[T](implicit token: AccessToken, m: Manifest[T]) = new GetSnapshotRequestor[T].request(token, ds.handle)
+    def snapshot(implicit token: AccessToken) = GetSnapshotRequestor.request(token, ds.handle)
   }
 
   implicit class RichDsInfo(val dsInfo: DsInfo) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
 
-    def snapshot[T](implicit token: AccessToken, m: Manifest[T]) = new GetSnapshotRequestor[T].request(token, dsInfo.handle)
+    def snapshot(implicit token: AccessToken) = GetSnapshotRequestor.request(token, dsInfo.handle)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
