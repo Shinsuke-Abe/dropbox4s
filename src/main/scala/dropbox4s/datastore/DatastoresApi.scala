@@ -20,7 +20,7 @@ import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 import scala.Some
-import dropbox4s.datastore.model.Datastore
+import dropbox4s.datastore.model.{Snapshot, Datastore}
 import dropbox4s.datastore.internal.jsonresponse.DsInfo
 import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
 
@@ -44,13 +44,13 @@ object DatastoresApi {
   implicit class RichDataStore(val ds: Datastore) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, ds.handle)
 
-    def snapshot(implicit token: AccessToken) = GetSnapshotRequestor.request(token, ds.handle)
+    def snapshot(implicit token: AccessToken) = Snapshot(ds.handle, GetSnapshotRequestor.request(token, ds.handle))
   }
 
   implicit class RichDsInfo(val dsInfo: DsInfo) {
     def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
 
-    def snapshot(implicit token: AccessToken) = GetSnapshotRequestor.request(token, dsInfo.handle)
+    def snapshot(implicit token: AccessToken) = Snapshot(dsInfo.handle, GetSnapshotRequestor.request(token, dsInfo.handle))
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

@@ -42,7 +42,10 @@ class DatastoresApiTest extends Specification {
       get(s"$testDsName").created must beFalse
 
       // get snapshots(rev 0, no rows)
-      createdDs.snapshot.rows.isEmpty must beTrue
+//      createdDs.snapshot.rows.isEmpty must beTrue
+      val testSnapshot = createdDs.snapshot
+      testSnapshot.handle must equalTo(createdDs.handle)
+      testSnapshot.tableNames must equalTo(List.empty)
 
       // delete datastore
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
@@ -67,7 +70,7 @@ class DatastoresApiTest extends Specification {
       val forDeleteDsInfo = listDatastores.find(_.dsid == testDsName).get
 
       // get snapshots(rev 0, no rows)
-      forDeleteDsInfo.snapshot.rows.isEmpty must beTrue
+      forDeleteDsInfo.snapshot.handle must equalTo(forDeleteDsInfo.handle)
 
       forDeleteDsInfo.delete.ok must equalTo(deleteOkMessage(forDeleteDsInfo.handle))
     }
