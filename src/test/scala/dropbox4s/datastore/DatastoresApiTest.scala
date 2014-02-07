@@ -62,12 +62,18 @@ class DatastoresApiTest extends Specification {
 
       // check inserted data
       val insertedSnapshot = get(s"${testDsName}").snapshot
-
       insertedSnapshot.tableNames must equalTo(List("test-table"))
 
       val insertedTable = insertedSnapshot.table("test-table")(dummyJsonGenerator)
-
       insertedTable.rows must equalTo(List(insertRow))
+
+      // delete data by record id
+      insertedTable.delete("new-row-id")
+
+      // check deleted data
+      val deletedSnapshot = get(s"${testDsName}").snapshot
+      val deletedTable = deletedSnapshot.table("test-table")(dummyJsonGenerator)
+      deletedTable.rows must equalTo(List.empty)
 
       // delete datastore
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
