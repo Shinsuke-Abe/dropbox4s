@@ -24,3 +24,7 @@ import org.json4s._
 case class DataInsert(tid: String, recordid: String, datadict: JValue) {
   def toChangeList = JArray(List(JString("I"), JString(tid), JString(recordid), datadict))
 }
+
+case class DataDelete(tid: String, recordid: String) {
+  def toChangeList = JArray(List(JString("D"), JString(tid), JString(recordid)))
+}
