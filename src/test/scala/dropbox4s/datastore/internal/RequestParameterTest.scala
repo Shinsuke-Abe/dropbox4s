@@ -34,15 +34,17 @@ class RequestParameterTest extends Specification {
 
   "PutDeltaParameter#changeDeltas" should {
     val changesList =
-      PutDeltaParameter("test-handle", 0, None, List(DataInsert("test-table", "testrecord", dummyData))).changeDeltas
+      PutDeltaParameter("test-handle", 0, None,List(
+        DataInsert("test-table", "testrecord", dummyData),
+        DataDelete("test-table", "testrecord"))).changeDeltas
 
     "create list of changes for json value" in {
-      changesList must equalTo(List(expectedInsert))
+      changesList must equalTo(List(expectedInsert, expectedDelete))
     }
 
     "list can convert to Json string" in {
       compact(render(changesList)) must
-        equalTo("""[["I","test-table","testrecord",{"test":"test-data"}]]""")
+        equalTo("""[["I","test-table","testrecord",{"test":"test-data"}],["D","test-table","testrecord"]]""")
     }
   }
 }

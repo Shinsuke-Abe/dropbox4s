@@ -1,5 +1,7 @@
 package dropbox4s.datastore.internal.requestparameter
 
+import org.json4s._
+
 /*
  * Copyright (C) 2014 Shinsuke Abe
  *
@@ -19,6 +21,23 @@ package dropbox4s.datastore.internal.requestparameter
 /**
  * @author mao.instantlife at gmail.com
  */
-case class PutDeltaParameter(handle: String, rev: Int, nonce: Option[String], list_of_changes: List[DataInsert]) {
+case class PutDeltaParameter(handle: String, rev: Int, nonce: Option[String], list_of_changes: List[DataOperation]) {
   def changeDeltas = list_of_changes.map(_.toChangeList)
+}
+
+sealed trait DataOperation {
+  val op: String
+  def toChangeList: JValue
+}
+
+case class DataInsert(tid: String, recordid: String, datadict: JValue) extends DataOperation {
+  val op = "I"
+
+  def toChangeList = JArray(List(JString(op), JString(tid), JString(recordid), datadict))
+}
+
+case class DataDelete(tid: String, recordid: String) extends DataOperation {
+  val op = "D"
+
+  def toChangeList = JArray(List(JString(op), JString(tid), JString(recordid)))
 }
