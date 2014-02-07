@@ -25,7 +25,7 @@ class DatastoresApiTest extends Specification {
   val messageNotFound = s"No datastore was found for handle: u'${notExistsDs.handle}'"
   def deleteOkMessage(handle: String) = s"Deleted datastore with handle: u'${handle}'"
 
-  val dummyJsonGenerator: (TestDummyData) => JValue = (data) => ("test" -> data.test)
+  val dummyJsonConverter: (TestDummyData) => JValue = (data) => ("test" -> data.test)
   val insertRow = TableRow("new-row-id", TestDummyData("test value"))
 
   "get" should {
@@ -54,7 +54,7 @@ class DatastoresApiTest extends Specification {
       testSnapshot.handle must equalTo(createdDs.handle)
       testSnapshot.tableNames must equalTo(List.empty)
 
-      val table = testSnapshot.table("test-table")(dummyJsonGenerator)
+      val table = testSnapshot.table("test-table")(dummyJsonConverter)
 
       // insert data
       table.insert(insertRow)
@@ -64,15 +64,16 @@ class DatastoresApiTest extends Specification {
       val insertedSnapshot = get(s"${testDsName}").snapshot
       insertedSnapshot.tableNames must equalTo(List("test-table"))
 
-      val insertedTable = insertedSnapshot.table("test-table")(dummyJsonGenerator)
-      insertedTable.rows must equalTo(List(insertRow))
+      val insertedTable = insertedSnapshot.table("test-table")(dummyJsonConverter)
+      insertedTable.rows.size must equalTo(1)
+      insertedTable.get(insertRow.rowid) must equalTo(Some(insertRow))
 
       // delete data by record id
       insertedTable.delete("new-row-id")
 
       // check deleted data
       val deletedSnapshot = get(s"${testDsName}").snapshot
-      val deletedTable = deletedSnapshot.table("test-table")(dummyJsonGenerator)
+      val deletedTable = deletedSnapshot.table("test-table")(dummyJsonConverter)
       deletedTable.rows must equalTo(List.empty)
 
       // delete datastore
@@ -139,7 +140,7 @@ class DatastoresApiTest extends Specification {
 
   "insert" should {
     "throw exception not found datastore handle" in {
-      val notFoundTable = Table[TestDummyData]("handlenotfound", "not-found-table", 0, dummyJsonGenerator, List.empty)
+      val notFoundTable = Table[TestDummyData]("handlenotfound", "not-found-table", 0, dummyJsonConverter, List.empty)
       notFoundTable.insert(insertRow) must throwA[DropboxException](message = messageNotFound)
     }
   }

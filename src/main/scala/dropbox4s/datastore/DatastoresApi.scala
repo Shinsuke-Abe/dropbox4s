@@ -55,24 +55,18 @@ object DatastoresApi {
   }
 
   implicit class RichTable[T](val table: Table[T]) {
-    def insert(row: TableRow[T])(implicit token: AccessToken) = {
-      val parameter = PutDeltaParameter(
-        table.handle,
-        table.rev,
-        None,
-        List(DataInsert(table.tid, row.rowid, table.generator(row.data))))
-      PutDeltaRequestor.request(token, parameter)
-    }
+    def insert(row: TableRow[T])(implicit token: AccessToken) =
+      PutDeltaRequestor.request(
+        token,
+        PutDeltaParameter(table.handle, table.rev, None,
+          List(DataInsert(table.tid, row.rowid, table.converter(row.data)))))
 
-    def delete(rowid: String)(implicit token: AccessToken) = {
-      val parameter = PutDeltaParameter(
-        table.handle,
-        table.rev,
-        None,
-        List(DataDelete(table.tid, rowid)))
+    def delete(rowid: String)(implicit token: AccessToken) =
+      PutDeltaRequestor.request(
+        token,
+        PutDeltaParameter(table.handle, table.rev, None, List(DataDelete(table.tid, rowid))))
 
-      PutDeltaRequestor.request(token, parameter)
-    }
+    def get(rowid: String) = table.rows.find(_.rowid == rowid)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
