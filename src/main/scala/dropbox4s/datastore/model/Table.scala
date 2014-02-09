@@ -29,13 +29,18 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
     val jsonDiff = converter(rows.find(_.rowid == rowid).get.data) diff converter(other)
 
-    diffValues(jsonDiff.changed) ::: diffValues(jsonDiff.added)
+    diffValues(jsonDiff.changed) ::: diffValues(jsonDiff.added) ::: deleteValues(jsonDiff.deleted)
   }
 
   private def diffValues(diffValues: JValue) = for {
     JObject(diffField) <- diffValues
     JField(key, differentValue) <- diffField
   } yield JField(key, JArray(List(JString("P"), differentValue)))
+
+  private def deleteValues(deleteValues: JValue) = for {
+    JObject(deleteField) <- deleteValues
+    JField(key, _) <- deleteField
+  } yield JField(key, JArray(List(JString("D"))))
 }
 
 case class TableRow[T](rowid: String, data: T)

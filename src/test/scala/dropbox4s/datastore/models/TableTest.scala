@@ -17,7 +17,8 @@ class TableTest extends Specification {
   }
 
   val testTableRows = List(
-    TableRow("row-id-1", TestValue("value1", 0, List.empty, None))
+    TableRow("row-id-1", TestValue("value1", 0, List.empty, None)),
+    TableRow("row-id-2", TestValue("value1-2", 1, List.empty, Some("value4-2")))
   )
 
   val testTable = Table("test-handle", "test-table", 0, converter, testTableRows)
@@ -38,9 +39,15 @@ class TableTest extends Specification {
 
     "returns field operation in change atom values" in {
       testTable.rowDiff("row-id-1", TestValue("value2", 0, List.empty, Some("value4"))) must
-        containAllOf(List(
+        contain(
           JField("key1", JArray(List(JString("P"), JString("value2")))),
-          JField("key4", JArray(List(JString("P"), JString("value4"))))))
+          JField("key4", JArray(List(JString("P"), JString("value4")))))
+    }
+
+    "returns field operation in delete atom values" in {
+      testTable.rowDiff("row-id-2", TestValue("value1-2", 1, List.empty, None)) must
+        contain(
+          JField("key4", JArray(List(JString("D")))))
     }
   }
 }
