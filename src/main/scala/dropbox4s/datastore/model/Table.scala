@@ -16,11 +16,26 @@ package dropbox4s.datastore.model
  * limitations under the License.
  */
 
-import org.json4s.JsonAST.JValue
+import org.json4s._
+import dropbox4s.commons.DropboxException
 
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]])
+case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
+  def rowDiff(rowid: String, other: T) = {
+    require(Option(rowid).isDefined && !rowid.isEmpty && Option(other).isDefined)
+    if(!rows.exists(_.rowid == rowid)) throw DropboxException(s"row-id(${rowid}) is not found.")
+
+    val jsonDiff = converter(rows.find(_.rowid == rowid).get.data) diff converter(other)
+
+    diffValues(jsonDiff.changed) ::: diffValues(jsonDiff.added)
+  }
+
+  private def diffValues(diffValues: JValue) = for {
+    JObject(diffField) <- diffValues
+    JField(key, differentValue) <- diffField
+  } yield JField(key, JArray(List(JString("P"), differentValue)))
+}
 
 case class TableRow[T](rowid: String, data: T)
