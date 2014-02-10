@@ -41,13 +41,22 @@ class TableTest extends Specification {
       testTable.rowDiff("row-id-1", TestValue("value2", 0, List.empty, Some("value4"))) must
         contain(
           JField("key1", JArray(List(JString("P"), JString("value2")))),
-          JField("key4", JArray(List(JString("P"), JString("value4")))))
+          JField("key4", JArray(List(JString("P"), JString("value4"))))
+        )
     }
 
     "returns field operation in delete atom values" in {
       testTable.rowDiff("row-id-2", TestValue("value1-2", 1, List.empty, None)) must
         contain(
-          JField("key4", JArray(List(JString("D")))))
+          JField("key4", JArray(List(JString("D"))))
+        )
+    }
+
+    "returns field operation in add list value" in {
+      testTable.rowDiff("row-id-1", TestValue("value1", 0, List("value1", "value2"), None)) must
+        contain(
+          JField("key3", JArray(List(JString("P"), 0, JArray(List(JString("value1"), JString("value2"))))))
+        )
     }
   }
 }

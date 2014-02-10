@@ -23,24 +23,39 @@ import dropbox4s.commons.DropboxException
  * @author mao.instantlife at gmail.com
  */
 case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
+  def get(rowid: String) = rows.find(_.rowid == rowid)
+
   def rowDiff(rowid: String, other: T) = {
     require(Option(rowid).isDefined && !rowid.isEmpty && Option(other).isDefined)
-    if(!rows.exists(_.rowid == rowid)) throw DropboxException(s"row-id(${rowid}) is not found.")
 
-    val jsonDiff = converter(rows.find(_.rowid == rowid).get.data) diff converter(other)
+    get(rowid) match {
+      case Some(target) => {
+        implicit val arrays = arrayKeys(converter(target.data) merge converter(other))
+        val jsonDiff = converter(target.data) diff converter(other)
 
-    diffValues(jsonDiff.changed) ::: diffValues(jsonDiff.added) ::: deleteValues(jsonDiff.deleted)
+        toAtomOps(jsonDiff.changed, putAtomOp) :::
+          toAtomOps(jsonDiff.added, putAtomOp) :::
+          toAtomOps(jsonDiff.deleted, deleteAtomOp)
+      }
+      case None => throw DropboxException(s"row-id(${rowid}) is not found.")
+    }
   }
 
-  private def diffValues(diffValues: JValue) = for {
+  private def arrayKeys(merged: JValue): List[String] = for {
+    JObject(field) <- merged
+    JField(key, mergedValue) <- field
+    if mergedValue.isInstanceOf[JArray]
+  } yield key
+
+  private val putAtomOp = {value: JValue => JArray(List(JString("P"), value))}
+  private val deleteAtomOp = {value: JValue => JArray(List(JString("D")))}
+
+  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]) = for {
     JObject(diffField) <- diffValues
     JField(key, differentValue) <- diffField
-  } yield JField(key, JArray(List(JString("P"), differentValue)))
+    if !arrayKeys.exists(_ == key)
+  } yield JField(key, op(differentValue))
 
-  private def deleteValues(deleteValues: JValue) = for {
-    JObject(deleteField) <- deleteValues
-    JField(key, _) <- deleteField
-  } yield JField(key, JArray(List(JString("D"))))
 }
 
 case class TableRow[T](rowid: String, data: T)

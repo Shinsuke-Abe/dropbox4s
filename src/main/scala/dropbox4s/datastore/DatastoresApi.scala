@@ -65,8 +65,6 @@ object DatastoresApi {
       PutDeltaRequestor.request(
         token,
         PutDeltaParameter(table.handle, table.rev, None, List(DataDelete(table.tid, rowid))))
-
-    def get(rowid: String) = table.rows.find(_.rowid == rowid)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

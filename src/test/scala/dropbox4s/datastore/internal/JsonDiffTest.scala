@@ -45,4 +45,22 @@ class JsonDiffTest extends Specification {
         equalTo(Diff(JObject(List(("key1", JString("value3")))), JNothing, JObject(List(("key1", JArray(List(JString("value3"))))))))
     }
   }
+
+  "json#merge" should {
+    "merge 1json has list" in {
+      (parse("""{"test": "hoge"}""") merge parse("""{"test2": ["blue", "red"]}""")) must
+        equalTo(JObject(List(("test", JString("hoge")), ("test2", JArray(List(JString("blue"), JString("red")))))))
+    }
+
+    "merge 2json has list" in {
+      (parse("""{"test": ["hoge"]}""") merge parse("""{"test": ["blue", "red"]}""")) must
+        equalTo(JObject(List(("test", JArray(List(JString("hoge"),JString("blue"), JString("red")))))))
+    }
+
+    "merge string value and list" in {
+      // drop string value...
+      (parse("""{"test": "hoge"}""") merge parse("""{"test": ["blue", "red"]}""")) must
+        equalTo(JObject(List(("test", JArray(List(JString("blue"), JString("red")))))))
+    }
+  }
 }
