@@ -23,7 +23,8 @@ import scala.Some
 import dropbox4s.datastore.model.{TableRow, Table, Snapshot, Datastore}
 import dropbox4s.datastore.internal.jsonresponse.DsInfo
 import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
-import dropbox4s.datastore.internal.requestparameter.{DataDelete, DataInsert, PutDeltaParameter}
+import dropbox4s.datastore.internal.requestparameter.{DataUpdate, DataDelete, DataInsert, PutDeltaParameter}
+import org.json4s._
 
 /**
  * @author mao.instantlife at gmail.com
@@ -65,6 +66,13 @@ object DatastoresApi {
       PutDeltaRequestor.request(
         token,
         PutDeltaParameter(table.handle, table.rev, None, List(DataDelete(table.tid, rowid))))
+
+    def update(rowid: String, other: T)(implicit token: AccessToken) =
+      PutDeltaRequestor.request(
+        token,
+        PutDeltaParameter(table.handle, table.rev, None,
+          table.rowDiff(rowid, other).map(diff => DataUpdate(table.tid, rowid, JObject(List(diff)))))
+      )
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

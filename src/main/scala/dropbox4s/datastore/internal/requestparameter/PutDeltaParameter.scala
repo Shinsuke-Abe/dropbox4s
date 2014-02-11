@@ -41,3 +41,9 @@ case class DataDelete(tid: String, recordid: String) extends DataOperation {
 
   def toChangeList = JArray(List(JString(op), JString(tid), JString(recordid)))
 }
+
+case class DataUpdate(tid: String, recordid: String, opdict: JValue) extends DataOperation {
+  val op = "U"
+
+  def toChangeList = JArray(List(JString(op), JString(tid), JString(recordid), opdict))
+}

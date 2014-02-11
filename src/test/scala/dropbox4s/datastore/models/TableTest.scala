@@ -80,5 +80,14 @@ class TableTest extends Specification {
           JField("key3", JArray(List(JString("D"))))
         )
     }
+
+    "returns fields operation" in {
+      testTable.rowDiff("row-id-2", TestValue("value1-2-test", 1, Some(List("value3-2-1", "value3-2-1")), None)) must
+        contain(
+          JField("key1", JArray(List(JString("P"), JString("value1-2-test")))),
+          JField("key4", JArray(List(JString("D")))),
+          JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-2-1"), JString("value3-2-1"))))))
+        )
+    }
   }
 }

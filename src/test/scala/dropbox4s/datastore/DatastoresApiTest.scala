@@ -68,8 +68,16 @@ class DatastoresApiTest extends Specification {
       insertedTable.rows.size must equalTo(1)
       insertedTable.get(insertRow.rowid) must equalTo(Some(insertRow))
 
+      // update data
+      insertedTable.update(insertRow.rowid, TestDummyData("test new value"))
+
+      // check updated data
+      val updatedTable = get(s"${testDsName}").snapshot.table("test-table")(dummyJsonConverter)
+      updatedTable.rows.size must equalTo(1)
+      updatedTable.get(insertRow.rowid) must equalTo(TestDummyData("test new value"))
+
       // delete data by record id
-      insertedTable.delete("new-row-id")
+      updatedTable.delete("new-row-id")
 
       // check deleted data
       val deletedSnapshot = get(s"${testDsName}").snapshot
