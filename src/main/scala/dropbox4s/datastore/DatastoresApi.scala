@@ -59,10 +59,11 @@ object DatastoresApi {
         PutDeltaParameter(table.handle, table.rev, None,
           rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data)))))
 
-    def delete(rowid: String)(implicit token: AccessToken) =
+    def delete(rowids: String*)(implicit token: AccessToken) =
       PutDeltaRequestor.request(
         token,
-        PutDeltaParameter(table.handle, table.rev, None, List(DataDelete(table.tid, rowid))))
+        PutDeltaParameter(table.handle, table.rev, None,
+          rowids.toList.map(DataDelete(table.tid, _))))
 
     def update(rowid: String, other: T)(implicit token: AccessToken) =
       PutDeltaRequestor.request(
