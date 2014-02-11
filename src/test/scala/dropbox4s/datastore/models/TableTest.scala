@@ -24,6 +24,12 @@ class TableTest extends Specification {
 
   val testTable = Table("test-handle", "test-table", 0, converter, testTableRows)
 
+  private def putDelta(key: String, value: JValue) =
+    JObject(List(JField(key, JArray(List(JString("P"), value)))))
+
+  private def deleteDelta(key: String) =
+    JObject(List(JField(key, JArray(List(JString("D"))))))
+
   "rowDiff" should {
     "throw exception with null other value" in {
       testTable.rowDiff("row-id-1", null) must throwA[IllegalArgumentException]
@@ -41,37 +47,35 @@ class TableTest extends Specification {
     "returns field operation in add list value" in {
       testTable.rowDiff("row-id-1", TestValue("value1", 0, Some(List("value1", "value2")), None)) must
         contain(
-          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value1"), JString("value2"))))))))
+          putDelta("key3", JArray(List(JString("value1"), JString("value2"))))
         )
     }
 
     "returns field operation in change list value" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, Some(List("value3-3-3", "value3-3-4")), None)) must
         contain(
-          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-3-3"), JString("value3-3-4"))))))))
+          putDelta("key3", JArray(List(JString("value3-3-3"), JString("value3-3-4"))))
         )
     }
 
     "returns field operation in list to empty" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, Some(List.empty), None)) must
         contain(
-          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List.empty))))))
+          putDelta("key3", JArray(List.empty))
         )
     }
 
     "returns field operation in delete list" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, None, None)) must
-        contain(
-          JObject(List(JField("key3", JArray(List(JString("D"))))))
-        )
+        contain(deleteDelta("key3"))
     }
 
     "returns fields operation" in {
       testTable.rowDiff("row-id-2", TestValue("value1-2-test", 1, Some(List("value3-2-1", "value3-2-1")), None)) must
         contain(
-          JObject(List(JField("key1", JArray(List(JString("P"), JString("value1-2-test")))))),
-          JObject(List(JField("key4", JArray(List(JString("D")))))),
-          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-2-1"), JString("value3-2-1"))))))))
+          putDelta("key1", JString("value1-2-test")),
+          deleteDelta("key4"),
+          putDelta("key3", JArray(List(JString("value3-2-1"), JString("value3-2-1"))))
         )
     }
   }

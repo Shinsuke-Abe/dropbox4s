@@ -18,13 +18,10 @@ package dropbox4s.datastore
 
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
+import dropbox4s.datastore.internal.jsonresponse._
 import scala.Some
-import dropbox4s.datastore.model.{TableRow, Table, Snapshot, Datastore}
-import dropbox4s.datastore.internal.jsonresponse.DsInfo
-import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
-import dropbox4s.datastore.internal.requestparameter.{DataUpdate, DataDelete, DataInsert, PutDeltaParameter}
-import org.json4s._
+import dropbox4s.datastore.model._
+import dropbox4s.datastore.internal.requestparameter._
 
 /**
  * @author mao.instantlife at gmail.com
