@@ -53,11 +53,11 @@ object DatastoresApi {
   }
 
   implicit class RichTable[T](val table: Table[T]) {
-    def insert(row: TableRow[T])(implicit token: AccessToken) =
+    def insert(rows: TableRow[T]*)(implicit token: AccessToken) =
       PutDeltaRequestor.request(
         token,
         PutDeltaParameter(table.handle, table.rev, None,
-          List(DataInsert(table.tid, row.rowid, table.converter(row.data)))))
+          rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data)))))
 
     def delete(rowid: String)(implicit token: AccessToken) =
       PutDeltaRequestor.request(
