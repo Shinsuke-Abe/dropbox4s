@@ -6,7 +6,7 @@ package dropbox4s.datastore.models
 
 import org.specs2.mutable._
 import dropbox4s.datastore.model.{TableRow, Table}
-import org.json4s.JsonAST.{JField, JString, JArray, JValue}
+import org.json4s._
 import org.json4s.JsonDSL._
 import dropbox4s.commons.DropboxException
 
@@ -38,55 +38,40 @@ class TableTest extends Specification {
         throwA[DropboxException]
     }
 
-    "returns field operation in change atom values" in {
-      testTable.rowDiff("row-id-1", TestValue("value2", 0, Some(List.empty), Some("value4"))) must
-        contain(
-          JField("key1", JArray(List(JString("P"), JString("value2")))),
-          JField("key4", JArray(List(JString("P"), JString("value4"))))
-        )
-    }
-
-    "returns field operation in delete atom values" in {
-      testTable.rowDiff("row-id-2", TestValue("value1-2", 1, Some(List.empty), None)) must
-        contain(
-          JField("key4", JArray(List(JString("D"))))
-        )
-    }
-
     "returns field operation in add list value" in {
       testTable.rowDiff("row-id-1", TestValue("value1", 0, Some(List("value1", "value2")), None)) must
         contain(
-          JField("key3", JArray(List(JString("P"), JArray(List(JString("value1"), JString("value2"))))))
+          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value1"), JString("value2"))))))))
         )
     }
 
     "returns field operation in change list value" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, Some(List("value3-3-3", "value3-3-4")), None)) must
         contain(
-          JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-3-3"), JString("value3-3-4"))))))
+          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-3-3"), JString("value3-3-4"))))))))
         )
     }
 
     "returns field operation in list to empty" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, Some(List.empty), None)) must
         contain(
-          JField("key3", JArray(List(JString("P"), JArray(List.empty))))
+          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List.empty))))))
         )
     }
 
     "returns field operation in delete list" in {
       testTable.rowDiff("row-id-3", TestValue("value1-3", 2, None, None)) must
         contain(
-          JField("key3", JArray(List(JString("D"))))
+          JObject(List(JField("key3", JArray(List(JString("D"))))))
         )
     }
 
     "returns fields operation" in {
       testTable.rowDiff("row-id-2", TestValue("value1-2-test", 1, Some(List("value3-2-1", "value3-2-1")), None)) must
         contain(
-          JField("key1", JArray(List(JString("P"), JString("value1-2-test")))),
-          JField("key4", JArray(List(JString("D")))),
-          JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-2-1"), JString("value3-2-1"))))))
+          JObject(List(JField("key1", JArray(List(JString("P"), JString("value1-2-test")))))),
+          JObject(List(JField("key4", JArray(List(JString("D")))))),
+          JObject(List(JField("key3", JArray(List(JString("P"), JArray(List(JString("value3-2-1"), JString("value3-2-1"))))))))
         )
     }
   }

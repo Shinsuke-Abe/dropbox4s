@@ -51,13 +51,15 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
   private val putAtomOp = {value: JValue => JArray(List(JString("P"), value))}
   private val deleteAtomOp = {value: JValue => JArray(List(JString("D")))}
 
-  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JField] = for {
+  private def opdict(key: String, fieldOp: JValue) = JObject(List(JField(key, fieldOp)))
+
+  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JObject] = for {
     JObject(diffField) <- diffValues
     JField(key, differentValue) <- diffField
     if !arrayKeys.exists(_ == key)
-  } yield JField(key, op(differentValue))
+  } yield opdict(key, op(differentValue))
 
-  private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JField] = {
+  private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JObject] = {
     def keys(diffs: JValue):List[String] = for {
       JObject(field) <- diffs
       JField(key, _) <- field
@@ -70,8 +72,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
       case JField(key, _) if diffArrayKeys.exists(_ == key) => true
       case _ => false
     } map { _ match {
-        case JField(key, value) if value == JNothing => JField(key, deleteAtomOp(value))
-        case JField(key, value) => JField(key, putAtomOp(value))
+        case JField(key, value) if value == JNothing => opdict(key, deleteAtomOp(value))
+        case JField(key, value) => opdict(key, putAtomOp(value))
       }
     }
   }
