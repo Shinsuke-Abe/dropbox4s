@@ -51,14 +51,14 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
   private val putAtomOp = {value: JValue => JArray(List(JString("P"), value))}
   private val deleteAtomOp = {value: JValue => JArray(List(JString("D")))}
 
-  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]) = for {
+  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JField] = for {
     JObject(diffField) <- diffValues
     JField(key, differentValue) <- diffField
     if !arrayKeys.exists(_ == key)
   } yield JField(key, op(differentValue))
 
-  private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]) = {
-    def keys(diffs: JValue) = for {
+  private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JField] = {
+    def keys(diffs: JValue):List[String] = for {
       JObject(field) <- diffs
       JField(key, _) <- field
       if arrayKeys.exists(_ == key)
