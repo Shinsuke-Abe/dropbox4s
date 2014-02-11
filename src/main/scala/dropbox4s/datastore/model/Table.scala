@@ -35,7 +35,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
         toAtomOps(jsonDiff.changed, putAtomOp) :::
           toAtomOps(jsonDiff.added, putAtomOp) :::
-          toAtomOps(jsonDiff.deleted, deleteAtomOp)
+          toAtomOps(jsonDiff.deleted, deleteAtomOp) :::
+          toArrayOps(jsonDiff, converter(other))
       }
       case None => throw DropboxException(s"row-id(${rowid}) is not found.")
     }
@@ -56,6 +57,24 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
     if !arrayKeys.exists(_ == key)
   } yield JField(key, op(differentValue))
 
+  private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]) = {
+    def keys(diffs: JValue) = for {
+      JObject(field) <- diffs
+      JField(key, _) <- field
+      if arrayKeys.exists(_ == key)
+    } yield key
+
+    val diffArrayKeys = (keys(jsonDiff.changed) ::: keys(jsonDiff.added) ::: keys(jsonDiff.deleted)).distinct
+
+    other filterField {
+      case JField(key, _) if diffArrayKeys.exists(_ == key) => true
+      case _ => false
+    } map { _ match {
+        case JField(key, value) if value == JNothing => JField(key, deleteAtomOp(value))
+        case JField(key, value) => JField(key, putAtomOp(value))
+      }
+    }
+  }
 }
 
 case class TableRow[T](rowid: String, data: T)
