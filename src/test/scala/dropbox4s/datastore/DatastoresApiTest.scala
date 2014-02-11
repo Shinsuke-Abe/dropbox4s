@@ -26,9 +26,15 @@ class DatastoresApiTest extends Specification {
   def deleteOkMessage(handle: String) = s"Deleted datastore with handle: u'${handle}'"
 
   val dummyJsonConverter: (TestDummyData) => JValue = (data) => ("test" -> data.test)
-  val insertRow = TableRow("new-row-id", TestDummyData("test value"))
 
-  "get" should {
+  val testRowId = "new-row-id"
+  val insertRow = TableRow(testRowId, TestDummyData("test value"))
+  val updateRow = TableRow(testRowId, TestDummyData("test new value"))
+
+  "datastore api" should {
+    val testDsName = s"test_ds_${createTimeStamp}"
+    val createdDs = get(s"$testDsName", orCreate)
+
     "throw exception with null value" in {
       get(null) must throwA[IllegalArgumentException]
     }
@@ -38,51 +44,51 @@ class DatastoresApiTest extends Specification {
     }
 
     "get Datastore result with orCreate flag" in {
-      val testDsName = s"test_ds_${createTimeStamp}"
-      val createdDs = get(s"$testDsName", orCreate)
-
       createdDs.dsid must equalTo(s"$testDsName")
       listDatastores.exists(_.dsid == testDsName) must beTrue
+    }
 
+    "get Datastore result on exists store with orCreate flag" in {
       get(s"$testDsName", orCreate).created must beFalse
+    }
 
-      // without orCreate flag
+    "get Datastore result on exists store without orCreate flag" in {
       get(s"$testDsName").created must beFalse
+    }
 
-      // get snapshots(rev 0, no rows)
+    "get snapshot result" in {
       val testSnapshot = createdDs.snapshot
       testSnapshot.handle must equalTo(createdDs.handle)
-      testSnapshot.tableNames must equalTo(List.empty)
+    }
 
-      val table = testSnapshot.table("test-table")(dummyJsonConverter)
+    "get table and operation rows" in {
+      def testTable = get(s"${testDsName}").snapshot.table("test-table")(dummyJsonConverter)
+
+      def checkTestTable(row: TableRow[TestDummyData]) = {
+        val table = testTable
+        table.rows.size must equalTo(1)
+        table.get(testRowId) must beSome(row)
+      }
+
+      val table = testTable
+      table.rows must equalTo(List.empty)
 
       // insert data
       table.insert(insertRow)
       table.insert(insertRow) must throwA[DropboxException](message = "Conflict")
-
       // check inserted data
-      val insertedSnapshot = get(s"${testDsName}").snapshot
-      insertedSnapshot.tableNames must equalTo(List("test-table"))
-
-      val insertedTable = insertedSnapshot.table("test-table")(dummyJsonConverter)
-      insertedTable.rows.size must equalTo(1)
-      insertedTable.get(insertRow.rowid) must equalTo(Some(insertRow))
+      checkTestTable(insertRow)
 
       // update data
-      insertedTable.update(insertRow.rowid, TestDummyData("test new value"))
-
+      testTable.update(testRowId, updateRow.data)
       // check updated data
-      val updatedTable = get(s"${testDsName}").snapshot.table("test-table")(dummyJsonConverter)
-      updatedTable.rows.size must equalTo(1)
-      updatedTable.get(insertRow.rowid) must equalTo(TestDummyData("test new value"))
+      checkTestTable(updateRow)
 
       // delete data by record id
-      updatedTable.delete("new-row-id")
+      testTable.delete(testRowId)
 
       // check deleted data
-      val deletedSnapshot = get(s"${testDsName}").snapshot
-      val deletedTable = deletedSnapshot.table("test-table")(dummyJsonConverter)
-      deletedTable.rows must equalTo(List.empty)
+      testTable.rows must equalTo(List.empty)
 
       // delete datastore
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
@@ -94,7 +100,7 @@ class DatastoresApiTest extends Specification {
     }
   }
 
-  "delete" should {
+  "delete datastore" should {
     "throw exception not found datastore handle" in {
       notExistsDs.delete must throwA[DropboxException](message = messageNotFound)
     }

@@ -68,7 +68,7 @@ object DatastoresApi {
       PutDeltaRequestor.request(
         token,
         PutDeltaParameter(table.handle, table.rev, None,
-          table.rowDiff(rowid, other).map(diff => DataUpdate(table.tid, rowid, diff)))
+          table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _)))
       )
   }
 

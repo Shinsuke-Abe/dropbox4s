@@ -25,6 +25,14 @@ import dropbox4s.commons.DropboxException
 case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
   def get(rowid: String) = rows.find(_.rowid == rowid)
 
+  /**
+   * generate update field operator by rowid and update data.
+   * if rowid is not found, throw DropboxException.
+   *
+   * @param rowid target rowid
+   * @param other update data
+   * @return list of update field operator
+   */
   def rowDiff(rowid: String, other: T) = {
     require(Option(rowid).isDefined && !rowid.isEmpty && Option(other).isDefined)
 
@@ -53,12 +61,28 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
   private def opdict(key: String, fieldOp: JValue) = JObject(List(JField(key, fieldOp)))
 
+  /**
+   * generate atom field update operator from json diffs.
+   *
+   * @param diffValues json diffs.
+   * @param op operator generator.
+   * @param arrayKeys list of key of array values.
+   * @return list of update field operator
+   */
   private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JObject] = for {
     JObject(diffField) <- diffValues
     JField(key, differentValue) <- diffField
     if !arrayKeys.exists(_ == key)
   } yield opdict(key, op(differentValue))
 
+  /**
+   * generate array field update operator from json diffs.
+   *
+   * @param jsonDiff json diffs.
+   * @param other update data
+   * @param arrayKeys list of key of array values.
+   * @return list of update field operator
+   */
   private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JObject] = {
     def keys(diffs: JValue):List[String] = for {
       JObject(field) <- diffs
