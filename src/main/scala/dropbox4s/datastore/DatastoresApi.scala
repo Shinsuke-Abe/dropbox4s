@@ -27,13 +27,27 @@ import dropbox4s.datastore.internal.requestparameter._
  * @author mao.instantlife at gmail.com
  */
 object DatastoresApi {
-
+  /**
+   * get datastore by dsid.
+   * if set createFlag to true, call get_or_create endpoint.
+   *
+   * @param dsid datastore id
+   * @param createFlag create datastore if dsid not exists.
+   * @param token access token
+   * @return Datastore instance
+   */
   def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) =
     if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor.request(token, dsid)))
     else Datastore(dsid, Some(GetDatastoreRequestor.request(token, dsid)))
 
   val orCreate = true
 
+  /**
+   * get list of datastores.
+   *
+   * @param token access token
+   * @return datastore list and token
+   */
   def listDatastores(implicit token: AccessToken) = ListDatastoresRequestor.request(token)
 
   implicit def listDatastoresToList(list: ListDatastoresResult) = list.datastores
@@ -53,24 +67,19 @@ object DatastoresApi {
   }
 
   implicit class RichTable[T](val table: Table[T]) {
-    def insert(rows: TableRow[T]*)(implicit token: AccessToken) =
+    private def putDeltaRequest(ops: List[DataOperation], token: AccessToken) =
       PutDeltaRequestor.request(
-        token,
-        PutDeltaParameter(table.handle, table.rev, None,
-          rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data)))))
+        token, PutDeltaParameter(table.handle, table.rev, None, ops))
+
+    def insert(rows: TableRow[T]*)(implicit token: AccessToken) =
+      putDeltaRequest(
+        rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data))), token)
 
     def delete(rowids: String*)(implicit token: AccessToken) =
-      PutDeltaRequestor.request(
-        token,
-        PutDeltaParameter(table.handle, table.rev, None,
-          rowids.toList.map(DataDelete(table.tid, _))))
+      putDeltaRequest(rowids.toList.map(DataDelete(table.tid, _)), token)
 
     def update(rowid: String, other: T)(implicit token: AccessToken) =
-      PutDeltaRequestor.request(
-        token,
-        PutDeltaParameter(table.handle, table.rev, None,
-          table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _)))
-      )
+      putDeltaRequest(table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _)), token)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
