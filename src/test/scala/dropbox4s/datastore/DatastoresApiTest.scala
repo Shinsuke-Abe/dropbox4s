@@ -100,6 +100,53 @@ class DatastoresApiTest extends Specification {
     }
   }
 
+  "multi rows operation" in {
+    val testDsName = s"test_rows_op_${createTimeStamp}"
+    val createdDs = get(s"$testDsName", orCreate)
+
+    def testTable = get(s"${testDsName}").snapshot.table("product-table"){data: TestProductRow =>
+      ("pid" -> data.pid) ~ ("price" -> data.price) ~ ("colors" -> data.colors)
+    }
+
+    // insert multi row
+    testTable.insert(
+      TableRow("testid01", TestProductRow("0001", 100, List("red", "green", "blue"))),
+      TableRow("testid02", TestProductRow("0002", 200, List("black", "white"))),
+      TableRow("testid03", TestProductRow("0003", 150, List("yellow", "green"))),
+      TableRow("testid04", TestProductRow("0004", 1000, List("black", "red", "purple"))),
+      TableRow("testid05", TestProductRow("0005", 500, List("white", "gold"))),
+      TableRow("testid06", TestProductRow("0006", 50, List("silver")))
+    )
+
+    testTable.rows must have size(6)
+
+    // update multi row
+    testTable.update(data => data.copy(price = data.price - 100)){ row => (row.data.price >= 500) }
+
+    testTable.get("testid04") must
+      equalTo(Some(TableRow("testid04", TestProductRow("0004", 900, List("black", "red", "purple")))))
+    testTable.get("testid05") must
+      equalTo(Some(TableRow("testid05", TestProductRow("0005", 400, List("white", "gold")))))
+
+    // delete multi row by condition
+    testTable.delete(row => row.data.colors.exists(_ =="green"))
+
+    testTable.rows must have size(4)
+
+    // delete multi row by rowids
+    testTable.delete("testid02", "testid04")
+
+    testTable.rows must have size(2)
+
+    // truncate rows
+    testTable.truncate
+
+    testTable.rows must be empty
+
+    createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
+    listDatastores.exists(_.dsid == testDsName) must beFalse
+  }
+
   "delete datastore" should {
     "throw exception not found datastore handle" in {
       notExistsDs.delete must throwA[DropboxException](message = messageNotFound)
