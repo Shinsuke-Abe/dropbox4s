@@ -91,8 +91,7 @@ object DatastoresApi {
 
   implicit class RichTable[T](val table: Table[T]) {
     private def putDeltaRequest(ops: List[DataOperation], token: AccessToken) =
-      PutDeltaRequestor.request(
-        token, PutDeltaParameter(table.handle, table.rev, None, ops))
+      PutDeltaRequestor.request(token, PutDeltaParameter(table.handle, table.rev, None, ops))
 
     private def select(where: (TableRow[T]) => Boolean) = table.rows.filter(where)
 
@@ -161,11 +160,8 @@ object DatastoresApi {
      * @param token access token
      * @return put_delta result
      */
-    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) = {
-      val updateRows = select(where).map(row => row.copy(data = set(row.data)))
-
-      putDeltaRequest(updateRows.map(row => rowUpdateOps(row.rowid, row.data)).flatten.toList, token)
-    }
+    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) =
+      putDeltaRequest(select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, token)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

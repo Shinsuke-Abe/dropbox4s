@@ -38,7 +38,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
     get(rowid) match {
       case Some(target) => {
-        implicit val arrays = arrayKeys(converter(target.data) merge converter(other))
+        implicit val arrays = selectKeys(converter(target.data) merge converter(other),
+          (_, mergedValue) => mergedValue.isInstanceOf[JArray])
         val jsonDiff = converter(target.data) diff converter(other)
 
         toAtomOps(jsonDiff.changed, putAtomOp) :::
@@ -50,10 +51,10 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
     }
   }
 
-  private def arrayKeys(merged: JValue): List[String] = for {
-    JObject(field) <- merged
-    JField(key, mergedValue) <- field
-    if mergedValue.isInstanceOf[JArray]
+  private def selectKeys(json: JValue, filter: (String, JValue) => Boolean): List[String] = for {
+    JObject(field) <- json
+    JField(key, value) <- field
+    if filter(key, value)
   } yield key
 
   private val putAtomOp = {value: JValue => JArray(List(JString("P"), value))}
@@ -84,11 +85,7 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
    * @return list of update field operator
    */
   private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JObject] = {
-    def keys(diffs: JValue):List[String] = for {
-      JObject(field) <- diffs
-      JField(key, _) <- field
-      if arrayKeys.exists(_ == key)
-    } yield key
+    val keys = selectKeys(_: JValue, (key, _) => arrayKeys.exists(_ == key))
 
     val diffArrayKeys = (keys(jsonDiff.changed) ::: keys(jsonDiff.added) ::: keys(jsonDiff.deleted)).distinct
 
