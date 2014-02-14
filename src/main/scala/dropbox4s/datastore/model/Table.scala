@@ -23,6 +23,8 @@ import dropbox4s.commons.DropboxException
  * @author mao.instantlife at gmail.com
  */
 case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
+  val getKey: (String, JValue) => String = (key, _) => key
+
   def get(rowid: String) = rows.find(_.rowid == rowid)
 
   /**
@@ -38,8 +40,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
     get(rowid) match {
       case Some(target) => {
-        implicit val arrays = selectKeys(converter(target.data) merge converter(other),
-          (_, mergedValue) => mergedValue.isInstanceOf[JArray])
+        implicit val arrays = selectJField(converter(target.data) merge converter(other),
+          (_, value) => value.isInstanceOf[JArray], getKey)
         val jsonDiff = converter(target.data) diff converter(other)
 
         toAtomOps(jsonDiff.changed, putAtomOp) :::
@@ -51,11 +53,11 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
     }
   }
 
-  private def selectKeys(json: JValue, filter: (String, JValue) => Boolean): List[String] = for {
+  private def selectJField[T](json: JValue, filter: (String, JValue) => Boolean, converter: (String, JValue) => T): List[T] = for {
     JObject(field) <- json
     JField(key, value) <- field
     if filter(key, value)
-  } yield key
+  } yield converter(key, value)
 
   private val putAtomOp = {value: JValue => JArray(List(JString("P"), value))}
   private val deleteAtomOp = {value: JValue => JArray(List(JString("D")))}
@@ -70,11 +72,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
    * @param arrayKeys list of key of array values.
    * @return list of update field operator
    */
-  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JObject] = for {
-    JObject(diffField) <- diffValues
-    JField(key, differentValue) <- diffField
-    if !arrayKeys.exists(_ == key)
-  } yield opdict(key, op(differentValue))
+  private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JObject] =
+    selectJField(diffValues, (key, _) => !arrayKeys.exists(_ == key), (key, value) => opdict(key, op(value)))
 
   /**
    * generate array field update operator from json diffs.
@@ -85,7 +84,7 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
    * @return list of update field operator
    */
   private def toArrayOps(jsonDiff: Diff, other: JValue)(implicit arrayKeys: List[String]):List[JObject] = {
-    val keys = selectKeys(_: JValue, (key, _) => arrayKeys.exists(_ == key))
+    val keys = selectJField(_: JValue, (key, _) => arrayKeys.exists(_ == key), getKey)
 
     val diffArrayKeys = (keys(jsonDiff.changed) ::: keys(jsonDiff.added) ::: keys(jsonDiff.deleted)).distinct
 
