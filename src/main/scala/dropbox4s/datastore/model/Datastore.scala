@@ -21,6 +21,9 @@ import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) {
-
+case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) extends LikeDatastore {
+  def handle = result match {
+    case Some(dsresult) => dsresult.handle
+    case None => null
+  }
 }

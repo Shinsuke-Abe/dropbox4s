@@ -53,7 +53,7 @@ object DatastoresApi {
   implicit def listDatastoresToList(list: ListDatastoresResult) = list.datastores
   implicit def datastoresToGetOrCreateResult(ds: Datastore) = ds.result.getOrElse(nullGetOrCreateDsResult)
 
-  implicit class RichDataStore(val ds: Datastore) {
+  implicit class RichDataStore(val ds: LikeDatastore) {
     /**
      * delete datastore.
      *
@@ -69,24 +69,6 @@ object DatastoresApi {
      * @return Snapshot instance
      */
     def snapshot(implicit token: AccessToken) = Snapshot(ds.handle, GetSnapshotRequestor.request(token, ds.handle))
-  }
-
-  implicit class RichDsInfo(val dsInfo: DsInfo) {
-    /**
-     * delete datastore.
-     *
-     * @param token access token
-     * @return delete result
-     */
-    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, dsInfo.handle)
-
-    /**
-     * get snapshot data list.
-     *
-     * @param token access token
-     * @return Snapshot instance
-     */
-    def snapshot(implicit token: AccessToken) = Snapshot(dsInfo.handle, GetSnapshotRequestor.request(token, dsInfo.handle))
   }
 
   implicit class RichTable[T](val table: Table[T]) {

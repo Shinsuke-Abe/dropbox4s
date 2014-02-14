@@ -1,6 +1,4 @@
-package dropbox4s.datastore.internal.jsonresponse
-
-import dropbox4s.datastore.model.LikeDatastore
+package dropbox4s.datastore.model
 
 /*
  * Copyright (C) 2014 Shinsuke Abe
@@ -21,10 +19,6 @@ import dropbox4s.datastore.model.LikeDatastore
 /**
  * @author mao.instantlife at gmail.com
  */
-case class ListDatastoresResult(datastores: List[DsInfo], token: String)
-
-case class DsInfo(dsid: String, handle: String, rev: Int, info: Option[InfoDict] = None) extends LikeDatastore
-
-case class InfoDict(title: String, mtime: WrappedTimestamp)
-
-case class WrappedTimestamp(T: String)
+trait LikeDatastore {
+  def handle: String
+}
