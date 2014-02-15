@@ -8,7 +8,8 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.3.7" % "test",
   "org.mockito" % "mockito-core" % "1.9.5" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
-  "org.json4s" %% "json4s-native" % "3.2.6"
+  "org.json4s" %% "json4s-native" % "3.2.6",
+  "com.dropbox.core" % "dropbox-core-sdk" % "[1.7,1.8)"
 )
 
 scalacOptions in Test ++= Seq("-Yrangepos")
