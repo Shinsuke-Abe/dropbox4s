@@ -71,6 +71,10 @@ object DatastoresApi {
     def snapshot(implicit token: AccessToken) = Snapshot(ds.handle, GetSnapshotRequestor.request(token, ds.handle))
   }
 
+  implicit class RichListDatastores(val listDs: ListDatastoresResult) {
+    def await(implicit token: AccessToken) = AwaitListDatastoresRequestor.request(token, ListAwaitParameter(listDs.token))
+  }
+
   implicit class RichTable[T](val table: Table[T]) {
     private def putDeltaRequest(ops: List[DataOperation], token: AccessToken) =
       PutDeltaRequestor.request(token, PutDeltaParameter(table.handle, table.rev, None, ops))

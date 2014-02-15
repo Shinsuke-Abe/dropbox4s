@@ -45,7 +45,11 @@ class DatastoresApiTest extends Specification {
 
     "get Datastore result with orCreate flag" in {
       createdDs.dsid must equalTo(s"$testDsName")
-      listDatastores.exists(_.dsid == testDsName) must beTrue
+
+      val dsList = listDatastores
+      dsList.exists(_.dsid == testDsName) must beTrue
+
+      dsList.await.list_datastores.get.exists(_.dsid == testDsName) must beTrue
     }
 
     "get Datastore result on exists store with orCreate flag" in {

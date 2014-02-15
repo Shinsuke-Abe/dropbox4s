@@ -26,7 +26,7 @@ import dropbox4s.datastore.internal.jsonresponse.DeleteDatastoreResult
 import dropbox4s.datastore.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
 import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
-import dropbox4s.datastore.internal.requestparameter.PutDeltaParameter
+import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, PutDeltaParameter}
 import scala.Some
 import dropbox4s.commons.DropboxException
 import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
@@ -203,5 +203,23 @@ object PutDeltaRequestor extends DatastoreApiRequestor[PutDeltaParameter, PutDel
 
     if(input.nonce.isDefined) parameter + ("nonce" -> input.nonce.get)
     else parameter
+  }
+}
+
+/**
+ * await for list_datastores_result requestor
+ */
+object AwaitListDatastoresRequestor extends DatastoreApiRequestor[ListAwaitParameter, AwaitResult] {
+  val endpoint = "await"
+
+  protected def parameterRequirement(input: ListAwaitParameter) = notRequired
+
+  protected def requestParameter(input: ListAwaitParameter) =
+    Map("list_datastores" -> compact(render(input.toJson)))
+
+  override   private[dropbox4s] def generateReq(token: AccessToken, input: ListAwaitParameter) = {
+    require(Option(token).isDefined && parameterRequirement(input))
+
+    baseUrl <:< authHeader(token) <<? requestParameter(input)
   }
 }

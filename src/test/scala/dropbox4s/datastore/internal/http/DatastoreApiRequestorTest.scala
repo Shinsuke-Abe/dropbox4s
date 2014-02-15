@@ -10,9 +10,8 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import dropbox4s.datastore.TestDummyData
 import dispatch.Req
-import dropbox4s.datastore.internal.requestparameter.DataInsert
+import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, DataInsert, PutDeltaParameter}
 import dropbox4s.datastore.auth.AccessToken
-import dropbox4s.datastore.internal.requestparameter.PutDeltaParameter
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"
@@ -102,6 +101,19 @@ class DatastoreApiRequestorTest extends Specification {
       val req = ListDatastoresRequestor.generateReq(testToken, null)
 
       req isDatastoresApi ("/list_datastores", "POST", testToken)
+    }
+  }
+
+  // datastore/await for list_datastores result
+  "AwaitListDatastoresRequestor#generateReq" should {
+    "url that is set get parameter list_datastores and authorization header" in {
+      val req = AwaitListDatastoresRequestor.generateReq(testToken, ListAwaitParameter("test-await-token"))
+
+      req.url must startWith(s"${baseUrl}/await")
+      req.toRequest.getMethod must equalTo("GET")
+      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(testToken))
+      req.toRequest.getQueryParams.size must equalTo(1)
+      req.toRequest.getQueryParams.get("list_datastores").get(0) must equalTo("""{"token":"test-await-token"}""")
     }
   }
 
