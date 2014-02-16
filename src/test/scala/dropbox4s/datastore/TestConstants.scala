@@ -13,4 +13,5 @@ object TestConstants {
   prop.load(istream)
 
   val testUser1 = AccessToken(prop.getProperty("usertoken"))
+  val testUser1Id = prop.getProperty("userid").toLong
 }
