@@ -1,7 +1,7 @@
 package dropbox4s.datastore
 
 import java.util.Properties
-import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.commons.auth.AccessToken
 
 /**
  * @author mao.instantlife at gmail.com

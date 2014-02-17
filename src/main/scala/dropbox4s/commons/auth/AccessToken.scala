@@ -1,4 +1,4 @@
-package dropbox4s.datastore.auth
+package dropbox4s.commons.auth
 
 /*
  * Copyright (C) 2014 Shinsuke Abe

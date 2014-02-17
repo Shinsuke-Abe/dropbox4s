@@ -11,7 +11,7 @@ import org.json4s.JsonDSL._
 import dropbox4s.datastore.TestDummyData
 import dispatch.Req
 import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, DataInsert, PutDeltaParameter}
-import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.commons.auth.AccessToken
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"

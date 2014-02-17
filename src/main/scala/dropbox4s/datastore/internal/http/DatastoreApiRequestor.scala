@@ -23,7 +23,7 @@ import org.json4s.native.JsonMethods._
 import org.json4s.JsonDSL._
 import org.json4s.JValue
 import dropbox4s.datastore.internal.jsonresponse.DeleteDatastoreResult
-import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.commons.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
 import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
 import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, PutDeltaParameter}

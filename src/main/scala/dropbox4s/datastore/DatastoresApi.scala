@@ -17,7 +17,7 @@ package dropbox4s.datastore
  */
 
 import dropbox4s.datastore.internal.http._
-import dropbox4s.datastore.auth.AccessToken
+import dropbox4s.commons.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse._
 import scala.Some
 import dropbox4s.datastore.model._
