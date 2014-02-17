@@ -19,6 +19,7 @@ package dropbox4s.core
 import com.dropbox.core.{DbxRequestConfig, DbxClient}
 import dropbox4s.commons.auth.AccessToken
 import java.util.Locale
+import dropbox4s.core.model.DropboxPath
 
 /**
  * @author mao.instantlife at gmail.com
@@ -29,9 +30,14 @@ trait CoreApi {
   val locale: Locale
 
   lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.0.1"
+  lazy val requestConfig = new DbxRequestConfig(clientIdentifier, locale.toString)
+  lazy val client = new DbxClient(requestConfig, _: String)
 
-  implicit lazy val requestConfig = new DbxRequestConfig(clientIdentifier, locale.toString)
+  def accountInfo(implicit token: AccessToken) = client(token.token).getAccountInfo
 
-  def accountInfo(implicit requestConfig: DbxRequestConfig, token: AccessToken) =
-    new DbxClient(requestConfig, token.token).getAccountInfo
+  implicit class DbxRichFile(val file: java.io.File) {
+    def uploadTo(to: DropboxPath)(implicit token: AccessToken) = {
+      // This is fake. TODO implements
+    }
+  }
 }
