@@ -27,6 +27,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
   def get(rowid: String) = rows.find(_.rowid == rowid)
 
+  def select(where: (TableRow[T]) => Boolean) = rows.filter(where)
+
   /**
    * generate update field operator by rowid and update data.
    * if rowid is not found, throw DropboxException.

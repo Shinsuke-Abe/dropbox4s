@@ -79,8 +79,6 @@ object DatastoresApi {
     private def putDeltaRequest(ops: List[DataOperation], token: AccessToken) =
       PutDeltaRequestor.request(token, PutDeltaParameter(table.handle, table.rev, None, ops))
 
-    private def select(where: (TableRow[T]) => Boolean) = table.rows.filter(where)
-
     private def rowUpdateOps(rowid: String, other: T) =
       table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _))
 
@@ -117,7 +115,7 @@ object DatastoresApi {
      * @return put_delta result
      */
     def delete(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) =
-      putDeltaRequest(select(where).map(row => DataDelete(table.tid, row.rowid)), token)
+      putDeltaRequest(table.select(where).map(row => DataDelete(table.tid, row.rowid)), token)
 
     /**
      * delete all rows of table.
@@ -147,7 +145,7 @@ object DatastoresApi {
      * @return put_delta result
      */
     def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) =
-      putDeltaRequest(select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, token)
+      putDeltaRequest(table.select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, token)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
