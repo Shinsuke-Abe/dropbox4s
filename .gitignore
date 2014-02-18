@@ -4,3 +4,4 @@ target/
 src/test/TodoList.scala
 src/test/resources/test.properties
 src/test/scala/dropbox4s/datastore/JsonDiffTest.scala
+src/test/resources/testdowload/

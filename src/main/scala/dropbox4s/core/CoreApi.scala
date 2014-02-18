@@ -52,12 +52,16 @@ trait CoreApi {
     def downloadTo(to: String)(implicit token: AccessToken) = asDownloadFile(to){ stream =>
       client(token.token).getFile(fileEntity.path, fileEntity.rev, stream)
     }
+
+    def remove(implicit token: AccessToken) = client(token.token).delete(fileEntity.path)
   }
 
   implicit class RichDropboxPath(val dropboxPath: DropboxPath) {
     def downloadTo(to: String)(implicit token: AccessToken) = asDownloadFile(to){ stream =>
       client(token.token).getFile(dropboxPath.path, null, stream)
     }
+
+    def remove(implicit token: AccessToken) = client(token.token).delete(dropboxPath.path)
   }
 
   private def asDownloadFile[T](path: String)(f: (FileOutputStream) => T) = {
