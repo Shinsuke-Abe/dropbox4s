@@ -16,4 +16,6 @@ object TestConstants {
 
   val testUser1 = AccessToken(prop.getProperty("usertoken"))
   val testUser1Id = prop.getProperty("userid").toLong
+
+  val downloadRoot = prop.getProperty("downloadRoot")
 }

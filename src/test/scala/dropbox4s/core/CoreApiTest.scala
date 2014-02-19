@@ -52,6 +52,40 @@ class CoreApiTest extends Specification with CoreApi {
 
       (search(uploadCyclePath, removeTestFile)) must beEmpty
     }
+
+    "upload -> DbxEntry.File.downloadTo -> DbxEntry.File.remove cycle" in {
+      val downloadFileName = "dbx_entry_download_test.txt"
+      val downloadFile = new java.io.File(downloadRoot + downloadFileName)
+
+      if(downloadFile.exists) downloadFile.delete
+      downloadFile.exists must beFalse
+
+      val uploadedFile = createFile uploadTo (uploadCyclePath / downloadFileName)
+
+      uploadedFile.downloadTo(downloadRoot + downloadFileName)
+      downloadFile.exists must beTrue
+
+      uploadedFile remove
+
+      (search(uploadCyclePath, downloadFileName)) must beEmpty
+    }
+
+    "upload -> DropboxPath.downloadTo -> DropboxPath.remove cycle" in {
+      val downloadFileName = "dropbox_path_download_test.txt"
+      val downloadFile = new java.io.File(downloadRoot + downloadFileName)
+
+      if(downloadFile.exists) downloadFile.delete
+      downloadFile.exists must beFalse
+
+      createFile uploadTo(uploadCyclePath / downloadFileName)
+
+      (uploadCyclePath / downloadFileName).downloadTo(downloadRoot + downloadFileName)
+      downloadFile.exists must beTrue
+
+      (uploadCyclePath / downloadFileName).remove
+
+      (search(uploadCyclePath, downloadFileName)) must beEmpty
+    }
   }
 
 }
