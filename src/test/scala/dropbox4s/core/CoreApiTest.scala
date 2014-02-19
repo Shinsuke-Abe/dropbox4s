@@ -27,14 +27,30 @@ class CoreApiTest extends Specification with CoreApi {
   }
 
   "file lifecycle" should {
-    "upload -> update -> delete cycle" in {
-      val uploadedFile = createFile uploadTo DropboxPath("/test_uploadcycle/test.txt")
-      uploadedFile.path must equalTo("/test_uploadcycle/test.txt")
+    val uploadCyclePath = DropboxPath("/test_uploadcycle")
+
+    "upload -> DbxEntry.File.update -> DbxEntry.File.remove cycle" in {
+      val uploadTestFile = "upload_test.txt"
+
+      val uploadedFile = createFile uploadTo (uploadCyclePath / uploadTestFile)
+      uploadedFile.path must equalTo((uploadCyclePath / uploadTestFile).path)
 
       val updatedFile = uploadedFile update rewriteFile
-      updatedFile.path must equalTo("/test_uploadcycle/test.txt")
+      updatedFile.path must equalTo((uploadCyclePath / uploadTestFile).path)
 
       updatedFile remove
+
+      (search(uploadCyclePath, uploadTestFile)) must beEmpty
+    }
+
+    "upload -> DropboxPath.remove cycle" in {
+      val removeTestFile = "remove_test.txt"
+
+      (createFile uploadTo (uploadCyclePath / removeTestFile)).path must equalTo((uploadCyclePath / removeTestFile).path)
+
+      (uploadCyclePath / removeTestFile) remove
+
+      (search(uploadCyclePath, removeTestFile)) must beEmpty
     }
   }
 

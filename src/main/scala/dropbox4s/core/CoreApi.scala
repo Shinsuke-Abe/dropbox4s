@@ -21,6 +21,7 @@ import dropbox4s.commons.auth.AccessToken
 import java.util.Locale
 import dropbox4s.core.model.DropboxPath
 import java.io.{File, FileOutputStream, FileInputStream}
+import collection.JavaConversions._
 
 /**
  * @author mao.instantlife at gmail.com
@@ -36,6 +37,9 @@ trait CoreApi {
   lazy val client = new DbxClient(requestConfig, _: String)
 
   def accountInfo(implicit token: AccessToken) = client(token.token).getAccountInfo
+
+  def search(path: DropboxPath, query: String)(implicit token: AccessToken): List[DbxEntry] =
+    client(token.token).searchFileAndFolderNames(path.path, query).toList
 
   implicit class DbxRichFile(val localFile: File) {
     def uploadTo(to: DropboxPath, isForce: Boolean = false)(implicit token: AccessToken) = asUploadFile(localFile){ (file, stream) =>
