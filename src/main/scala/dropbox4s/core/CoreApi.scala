@@ -71,20 +71,18 @@ trait CoreApi {
   private def asDownloadFile[T](path: String)(f: (FileOutputStream) => T) = {
     val stream = new FileOutputStream(path)
 
-    try {
-      f(stream)
-    } finally {
-      stream.close
-    }
+    using(stream, f(stream))
   }
 
-  private def asUploadFile[T](file: java.io.File)(f: (java.io.File, FileInputStream) => T) = {
+  private def asUploadFile[T](file: File)(f: (File, FileInputStream) => T) = {
     val stream = new FileInputStream(file)
 
-    try {
-      f(file, stream)
-    } finally {
-      stream.close
-    }
+    using(stream, f(file, stream))
+  }
+
+  private def using[T](stream: java.io.Closeable, ret: => T) = try {
+    ret
+  } finally {
+    stream.close
   }
 }

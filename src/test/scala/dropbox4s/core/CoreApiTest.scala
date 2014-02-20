@@ -7,6 +7,7 @@ package dropbox4s.core
 import org.specs2.mutable._
 import java.util.Locale
 import dropbox4s.core.model.DropboxPath
+import com.dropbox.core.DbxEntry
 
 class CoreApiTest extends Specification with CoreApi {
   val locale = Locale.getDefault
@@ -29,62 +30,72 @@ class CoreApiTest extends Specification with CoreApi {
   "file lifecycle" should {
     val uploadCyclePath = DropboxPath("/test_uploadcycle")
 
+    def uploadFilePath(fileName: String) = uploadCyclePath / fileName
+
+    def downloadFilePath(fileName: String) = downloadRoot + fileName
+
     "upload -> DbxEntry.File.update -> DbxEntry.File.remove cycle" in {
       val uploadTestFile = "upload_test.txt"
 
-      val uploadedFile = createFile uploadTo (uploadCyclePath / uploadTestFile)
-      uploadedFile.path must equalTo((uploadCyclePath / uploadTestFile).path)
+      val uploadedFile = createFile uploadTo uploadFilePath(uploadTestFile)
+      uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
 
       val updatedFile = uploadedFile update rewriteFile
-      updatedFile.path must equalTo((uploadCyclePath / uploadTestFile).path)
+      updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
 
-      updatedFile remove
-
-      (search(uploadCyclePath, uploadTestFile)) must beEmpty
+      afterTestByFile(updatedFile, uploadTestFile)
     }
 
     "upload -> DropboxPath.remove cycle" in {
       val removeTestFile = "remove_test.txt"
 
-      (createFile uploadTo (uploadCyclePath / removeTestFile)).path must equalTo((uploadCyclePath / removeTestFile).path)
+      (createFile uploadTo uploadFilePath(removeTestFile)).path must
+        equalTo(uploadFilePath(removeTestFile).path)
 
-      (uploadCyclePath / removeTestFile) remove
-
-      (search(uploadCyclePath, removeTestFile)) must beEmpty
+      afterTestByPath(uploadFilePath(removeTestFile), removeTestFile)
     }
 
     "upload -> DbxEntry.File.downloadTo -> DbxEntry.File.remove cycle" in {
       val downloadFileName = "dbx_entry_download_test.txt"
-      val downloadFile = new java.io.File(downloadRoot + downloadFileName)
 
-      if(downloadFile.exists) downloadFile.delete
-      downloadFile.exists must beFalse
+      val uploadedFile = prepareDownload(downloadFileName, uploadFilePath(downloadFileName))
 
-      val uploadedFile = createFile uploadTo (uploadCyclePath / downloadFileName)
+      uploadedFile.downloadTo(downloadFilePath(downloadFileName))
+      (new java.io.File(downloadFilePath(downloadFileName))).exists must beTrue
 
-      uploadedFile.downloadTo(downloadRoot + downloadFileName)
-      downloadFile.exists must beTrue
-
-      uploadedFile remove
-
-      (search(uploadCyclePath, downloadFileName)) must beEmpty
+      afterTestByFile(uploadedFile, downloadFileName)
     }
 
     "upload -> DropboxPath.downloadTo -> DropboxPath.remove cycle" in {
       val downloadFileName = "dropbox_path_download_test.txt"
+
+      prepareDownload(downloadFileName, uploadFilePath(downloadFileName))
+
+      uploadFilePath(downloadFileName).downloadTo(downloadFilePath(downloadFileName))
+      (new java.io.File(downloadFilePath(downloadFileName))).exists must beTrue
+
+      afterTestByPath(uploadFilePath(downloadFileName), downloadFileName)
+    }
+
+    def prepareDownload(downloadFileName: String, toPath: DropboxPath) = {
       val downloadFile = new java.io.File(downloadRoot + downloadFileName)
 
       if(downloadFile.exists) downloadFile.delete
       downloadFile.exists must beFalse
 
-      createFile uploadTo(uploadCyclePath / downloadFileName)
+      createFile uploadTo toPath
+    }
 
-      (uploadCyclePath / downloadFileName).downloadTo(downloadRoot + downloadFileName)
-      downloadFile.exists must beTrue
+    def afterTestByPath(path: DropboxPath, fileName: String) = {
+      path.remove
 
-      (uploadCyclePath / downloadFileName).remove
+      (search(uploadCyclePath, fileName)) must beEmpty
+    }
 
-      (search(uploadCyclePath, downloadFileName)) must beEmpty
+    def afterTestByFile(file: DbxEntry.File, fileName: String) = {
+      file.remove
+
+      (search(uploadCyclePath, fileName)) must beEmpty
     }
   }
 
