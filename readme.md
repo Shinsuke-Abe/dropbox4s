@@ -5,11 +5,8 @@ Supported Scala version is 2.10.x.
 
 
 ## Install
-Add the following dependencies to build.sbt.
-```
-resolvers += "bintray" at "http://dl.bintray.com/shinsuke-abe/maven"
-libraryDependencies += "com.github.Shinsuke-Abe" %% "dropbox4s" % "0.1.0"
-```
+In preparation.
+If you use beta version, please build these code and publish local.
 
 
 ## Dependencies with other libraries
@@ -30,7 +27,7 @@ Return value of DSL is dropbox-core-sdk's classes. Detail these classes, see [of
 
 
 First, trait dropbox4s.core.CoreApi mixin to your application class and implements some fields and access token set to implicit value.
-```
+```Scala
 class YourApplication extends CoreApi {
   // implements fields
   val applicationName = "YourApplicationName"
@@ -59,7 +56,7 @@ Return values defined on this library.<br/>
 
 Import dropbox4s.datastore.DatastoresApi object for using Datastore API DSL and access token set to implicit value.
 
-```
+```Scala
 class YourApplicataion {
   import DatastoresApi._
 
