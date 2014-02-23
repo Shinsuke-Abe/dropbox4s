@@ -58,7 +58,7 @@ class CoreApiTest extends Specification with CoreApi {
     "upload -> DbxEntry.File.downloadTo -> DbxEntry.File.remove cycle" in {
       val downloadFileName = "dbx_entry_download_test.txt"
 
-      val uploadedFile = prepareDownload(downloadFileName, uploadFilePath(downloadFileName))
+      val uploadedFile = prepareCycleTest(downloadFileName, uploadFilePath(downloadFileName))
 
       uploadedFile.downloadTo(downloadFilePath(downloadFileName))
       (new java.io.File(downloadFilePath(downloadFileName))).exists must beTrue
@@ -69,7 +69,7 @@ class CoreApiTest extends Specification with CoreApi {
     "upload -> DropboxPath.downloadTo -> DropboxPath.remove cycle" in {
       val downloadFileName = "dropbox_path_download_test.txt"
 
-      prepareDownload(downloadFileName, uploadFilePath(downloadFileName))
+      prepareCycleTest(downloadFileName, uploadFilePath(downloadFileName))
 
       uploadFilePath(downloadFileName).downloadTo(downloadFilePath(downloadFileName))
       (new java.io.File(downloadFilePath(downloadFileName))).exists must beTrue
@@ -77,7 +77,7 @@ class CoreApiTest extends Specification with CoreApi {
       afterTestByPath(uploadFilePath(downloadFileName), downloadFileName)
     }
 
-    def prepareDownload(downloadFileName: String, toPath: DropboxPath) = {
+    def prepareCycleTest(downloadFileName: String, toPath: DropboxPath) = {
       val downloadFile = new java.io.File(downloadRoot + downloadFileName)
 
       if(downloadFile.exists) downloadFile.delete
@@ -96,6 +96,34 @@ class CoreApiTest extends Specification with CoreApi {
       file.remove
 
       (search(uploadCyclePath, fileName)) must beEmpty
+    }
+
+    "upload -> DbxEntry.File.copyTo -> search(to) -> remove(from) -> remove(to)" in {
+      val copyFilename = "dbx_entry_copy_test.txt"
+      val copyDestPath = DropboxPath("/test_copycycle")
+
+      val uploadedFile = prepareCycleTest(copyFilename, uploadFilePath(copyFilename))
+
+      uploadedFile copyTo (copyDestPath / copyFilename)
+
+      (search(copyDestPath,copyFilename)) must have size(1)
+
+      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
+      afterTestByPath(copyDestPath / copyFilename, copyFilename)
+    }
+
+    "upload -> DropboxPath.copyTo -> search(to) -> remove(from) -> remove(to)" in {
+      val copyFilename = "dropbox_path_copy_test.txt"
+      val copyDestPath = DropboxPath("/test_copycycle")
+
+      prepareCycleTest(copyFilename, uploadFilePath(copyFilename))
+
+      uploadFilePath(copyFilename) copyTo (copyDestPath / copyFilename)
+
+      (search(copyDestPath, copyFilename)) must have size(1)
+
+      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
+      afterTestByPath(copyDestPath / copyFilename, copyFilename)
     }
   }
 
