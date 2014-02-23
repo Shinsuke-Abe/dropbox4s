@@ -41,6 +41,9 @@ trait CoreApi {
   def search(path: DropboxPath, query: String)(implicit token: AccessToken): List[DbxEntry] =
     client(token.token).searchFileAndFolderNames(path.path, query).toList
 
+  def createFolder(path: DropboxPath)(implicit token: AccessToken) =
+    client(token.token).createFolder(path.path)
+
   implicit class DbxRichFile(val localFile: File) {
     def uploadTo(to: DropboxPath, isForce: Boolean = false)(implicit token: AccessToken) = asUploadFile(localFile){ (file, stream) =>
       if(isForce) client(token.token).uploadFile(to.path, DbxWriteMode.force, localFile.length, stream)
@@ -74,7 +77,11 @@ trait CoreApi {
     def copyTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).copy(dropboxPath.path, toPath.path)
 
     def moveTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).move(dropboxPath.path, toPath.path)
+
+    def children(implicit token: AccessToken) = client(token.token).getMetadataWithChildren(dropboxPath.path)
   }
+
+  implicit def MetadataToChildren(metadata: DbxEntry.WithChildren): List[DbxEntry] = metadata.children.toList
 
   private def asDownloadFile[T](path: String)(f: (FileOutputStream) => T) = {
     val stream = new FileOutputStream(path)

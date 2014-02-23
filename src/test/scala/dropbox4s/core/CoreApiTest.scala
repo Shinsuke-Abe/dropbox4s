@@ -155,6 +155,19 @@ class CoreApiTest extends Specification with CoreApi {
 
       afterTestByPath(dest / fileName, fileName)
     }
+
+    "createFolder -> children has 1 -> remove children -> children has none" in {
+      val createBaseFolder = DropboxPath("/test_create_folder")
+      val targetFolder = createBaseFolder / "created"
+
+      createFolder(targetFolder)
+
+      (createBaseFolder children).size must equalTo(1)
+
+      targetFolder remove
+
+      (createBaseFolder children).size must equalTo(0)
+    }
   }
 
 }
