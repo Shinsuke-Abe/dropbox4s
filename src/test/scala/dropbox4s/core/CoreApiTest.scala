@@ -106,10 +106,7 @@ class CoreApiTest extends Specification with CoreApi {
 
       uploadedFile copyTo (copyDestPath / copyFilename)
 
-      (search(copyDestPath,copyFilename)) must have size(1)
-
-      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
-      afterTestByPath(copyDestPath / copyFilename, copyFilename)
+      verifyCopyFile(copyDestPath, copyFilename)
     }
 
     "upload -> DropboxPath.copyTo -> search(to) -> remove(from) -> remove(to)" in {
@@ -120,10 +117,43 @@ class CoreApiTest extends Specification with CoreApi {
 
       uploadFilePath(copyFilename) copyTo (copyDestPath / copyFilename)
 
-      (search(copyDestPath, copyFilename)) must have size(1)
+      verifyCopyFile(copyDestPath, copyFilename)
+    }
 
-      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
-      afterTestByPath(copyDestPath / copyFilename, copyFilename)
+    def verifyCopyFile(dest: DropboxPath, fileName: String) = {
+      (search(dest, fileName)) must have size(1)
+
+      afterTestByPath(uploadCyclePath / fileName, fileName)
+      afterTestByPath(dest / fileName, fileName)
+    }
+
+    "upload -> DbxEntry.File.moveTo -> search(from) -> search(to) -> remove(to)" in {
+      val moveFilename = "dbx_entry_move_test.txt"
+      val moveDestPath = DropboxPath("/test_movecycle")
+
+      val uploadedFile = prepareCycleTest(moveFilename, uploadFilePath(moveFilename))
+
+      uploadedFile moveTo (moveDestPath / moveFilename)
+
+      verifyMoveFile(moveDestPath, moveFilename)
+    }
+
+    "upload -> DropboxPath.moveTo -> search(from) -> search(to) -> remove(to)" in {
+      val moveFilename = "dropbox_path_move_test.txt"
+      val moveDestPath = DropboxPath("/test_movecycle")
+
+      prepareCycleTest(moveFilename, uploadFilePath(moveFilename))
+
+      uploadFilePath(moveFilename) moveTo (moveDestPath / moveFilename)
+
+      verifyMoveFile(moveDestPath, moveFilename)
+    }
+
+    def verifyMoveFile(dest: DropboxPath, fileName: String) = {
+      (search(uploadCyclePath, fileName)) must beEmpty
+      (search(dest, fileName)) must have size(1)
+
+      afterTestByPath(dest / fileName, fileName)
     }
   }
 
