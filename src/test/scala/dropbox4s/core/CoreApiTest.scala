@@ -10,7 +10,6 @@ import dropbox4s.core.model.DropboxPath
 import com.dropbox.core.DbxEntry
 
 class CoreApiTest extends Specification with CoreApi {
-  val locale = Locale.getDefault
   val version = "1.0"
   val applicationName = "TestAppForLibrary"
 

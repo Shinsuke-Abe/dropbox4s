@@ -5,15 +5,17 @@ Supported Scala version is 2.10.x.
 
 
 ## Install
-In preparation.
+In preparation.<br/>
 If you use beta version, please build these code and publish local.
 
 
 ## Dependencies with other libraries
-Dropbox4S has dependencies with following libraries.
+Dropbox4S has dependencies with following libraries.<br/>
+
 * dispatch 0.11.0
 * json4s(native) 3.2.6
 * dropbox-core-sdk 1.7.6
+
 Note: These libraries on latest stable at Feburary 18,2014.
 
 
@@ -32,7 +34,7 @@ class YourApplication extends CoreApi {
   // implements fields
   val applicationName = "YourApplicationName"
   val version = "1.0.0" // your application version(string)
-  val locale = Locale.getDefault
+  override val locale = Locale.JAPANESE // if customize local, override local field
 
 
   // user's access token
@@ -42,7 +44,12 @@ class YourApplication extends CoreApi {
   // application code
 }
 ```
-Note: Core API requires client identifier on request.<br/>
+Note:<br/>
+Core API requires client identifier on request. Higher library on basic SDK should append library identifier.<br/>
+On Dropbox4S, append library identifier "dropbox4s/0.1.0" to your identifier.<br/>
+For example, if your application identifier is "my_file_apps/1.0.0",
+Dropbox4S send identifier "my_file_apps/1.0.0 dropbox4s/0.1.0" to API.<br/>
+
 
 
 #### Core API DSL

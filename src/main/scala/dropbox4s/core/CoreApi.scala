@@ -29,7 +29,7 @@ import collection.JavaConversions._
 trait CoreApi {
   val applicationName: String
   val version: String
-  val locale: Locale
+  val locale: Locale = Locale.getDefault
 
   lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.0.1"
   lazy val requestConfig = new DbxRequestConfig(clientIdentifier, locale.toString)
@@ -55,30 +55,29 @@ trait CoreApi {
     def update(newFile: File)(implicit token: AccessToken) = asUploadFile(newFile){ (file, stream) =>
       client(token.token).uploadFile(fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
     }
-
-    def downloadTo(to: String)(implicit token: AccessToken) = asDownloadFile(to){ stream =>
-      client(token.token).getFile(fileEntity.path, fileEntity.rev, stream)
-    }
-
-    def remove(implicit token: AccessToken) = client(token.token).delete(fileEntity.path)
-
-    def copyTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).copy(fileEntity.path, toPath.path)
-
-    def moveTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).move(fileEntity.path, toPath.path)
   }
 
   implicit class RichDropboxPath(val dropboxPath: DropboxPath) {
+    def children(implicit token: AccessToken) = client(token.token).getMetadataWithChildren(dropboxPath.path)
+  }
+
+  implicit def FileEntryToRichPath(fileEntity: DbxEntry.File) = RichPath(fileEntity.path, fileEntity.rev)
+  implicit def DropboxPathToRichPath(dropboxPath: DropboxPath) = RichPath(dropboxPath.path)
+
+  case class RichPath(val path: String, val rev: String = null) {
     def downloadTo(to: String)(implicit token: AccessToken) = asDownloadFile(to){ stream =>
-      client(token.token).getFile(dropboxPath.path, null, stream)
+      client(token.token).getFile(path, rev, stream)
     }
 
-    def remove(implicit token: AccessToken) = client(token.token).delete(dropboxPath.path)
+    def remove(implicit token: AccessToken) = client(token.token).delete(path)
 
-    def copyTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).copy(dropboxPath.path, toPath.path)
+    def copyTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).copy(path, toPath.path)
 
-    def moveTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).move(dropboxPath.path, toPath.path)
+    def moveTo(toPath: DropboxPath)(implicit token: AccessToken) = client(token.token).move(path, toPath.path)
 
-    def children(implicit token: AccessToken) = client(token.token).getMetadataWithChildren(dropboxPath.path)
+    def shareLink(implicit token: AccessToken) = client(token.token).createShareableUrl(path)
+
+    def tempDirectLink(implicit token: AccessToken) = client(token.token).createTemporaryDirectUrl(path)
   }
 
   implicit def MetadataToChildren(metadata: DbxEntry.WithChildren): List[DbxEntry] = metadata.children.toList
