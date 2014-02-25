@@ -25,7 +25,8 @@ Dropbox4S supports Core API and Dropbox API.<br/>
 
 ### Using Core API
 Core API of Dropbox4S is DSL for dropbox-core-sdk.<br/>
-Return value of DSL is dropbox-core-sdk's classes. Detail these classes, see [official documents](http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/)<br/>
+Return value of DSL is dropbox-core-sdk's classes.
+Detail these classes, see [official documents](http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/)<br/>
 
 
 First, trait dropbox4s.core.CoreApi mixin to your application class and implements some fields and access token set to implicit value.
@@ -53,7 +54,8 @@ Dropbox4S send identifier "my_file_apps/1.0.0 dropbox4s/0.1.0" to API.<br/>
 
 
 #### Core API DSL
-In preparation.
+In preparation.<br/>
+[Test code](https://github.com/Shinsuke-Abe/dropbox4s/blob/master/src/test/scala/dropbox4s/core/CoreApiTest.scala) for sample.
 
 
 ### Using Datastore API
@@ -76,8 +78,8 @@ class YourApplicataion {
 
 
 #### Datastore API DSL
-In preparation.
-
+In preparation.<br/>
+[Test code](https://github.com/Shinsuke-Abe/dropbox4s/blob/master/src/test/scala/dropbox4s/datastore/DatastoresApiTest.scala) for sample.
 
 ## About function addition for DSL
 New functions will be added for new version.<br/>

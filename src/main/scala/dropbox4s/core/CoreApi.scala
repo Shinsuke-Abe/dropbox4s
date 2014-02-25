@@ -59,6 +59,8 @@ trait CoreApi {
 
   implicit class RichDropboxPath(val dropboxPath: DropboxPath) {
     def children(implicit token: AccessToken) = client(token.token).getMetadataWithChildren(dropboxPath.path)
+
+    def revisions(implicit token: AccessToken) = client(token.token).getRevisions(dropboxPath.path)
   }
 
   implicit def FileEntryToRichPath(fileEntity: DbxEntry.File) = RichPath(fileEntity.path, fileEntity.rev)
