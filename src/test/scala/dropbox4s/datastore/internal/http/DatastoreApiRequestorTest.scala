@@ -11,26 +11,26 @@ import org.json4s.JsonDSL._
 import dropbox4s.datastore.TestDummyData
 import dispatch.Req
 import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, DataInsert, PutDeltaParameter}
-import dropbox4s.commons.auth.AccessToken
+import com.dropbox.core.DbxAuthFinish
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"
 
-  val testToken = AccessToken("test-token")
+  val testAuth = new DbxAuthFinish("test-token", "userId", null)
 
-  def authHeaderValue(token: AccessToken) = s"Bearer ${token.token}"
+  def authHeaderValue(auth: DbxAuthFinish) = s"Bearer ${auth.accessToken}"
 
   implicit class RichReq(req: Req) {
-    def isDatastoresApi(endpoints: String, method: String, token: AccessToken) = {
+    def isDatastoresApi(endpoints: String, method: String, auth: DbxAuthFinish) = {
       req.url must equalTo(s"${baseUrl}${endpoints}")
       req.toRequest.getMethod must equalTo(method)
-      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(token))
+      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(auth))
     }
   }
 
   "DatastoreApiRequestor#request" should {
     "throw exception when unauth request is failed" in {
-      GetOrCreateDatastoreRequestor.request(testToken, "failed-request") must throwA[ExecutionException]
+      GetOrCreateDatastoreRequestor.request(testAuth, "failed-request") must throwA[ExecutionException]
     }
   }
 
@@ -41,13 +41,13 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "throw exception when dsid parameter is empty string" in {
-      GetOrCreateDatastoreRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+      GetOrCreateDatastoreRequestor.generateReq(testAuth, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter dsid and authorization header" in {
-      val req = GetOrCreateDatastoreRequestor.generateReq(testToken, "test-datastore")
+      val req = GetOrCreateDatastoreRequestor.generateReq(testAuth, "test-datastore")
 
-      req isDatastoresApi ("/get_or_create_datastore", "POST", testToken)
+      req isDatastoresApi ("/get_or_create_datastore", "POST", testAuth)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("dsid").get(0) must equalTo("test-datastore")
     }
@@ -60,13 +60,13 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "throw exception when dsid parameter is empty string" in {
-      GetDatastoreRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+      GetDatastoreRequestor.generateReq(testAuth, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter dsid and authorization header" in {
-      val req = GetDatastoreRequestor.generateReq(testToken, "test-datastore")
+      val req = GetDatastoreRequestor.generateReq(testAuth, "test-datastore")
 
-      req isDatastoresApi ("/get_datastore", "POST", testToken)
+      req isDatastoresApi ("/get_datastore", "POST", testAuth)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("dsid").get(0) must equalTo("test-datastore")
     }
@@ -79,13 +79,13 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "throw exception when dsid parameter is empty string" in {
-      DeleteDatastoreRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+      DeleteDatastoreRequestor.generateReq(testAuth, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter dsid and authorization header" in {
-      val req = DeleteDatastoreRequestor.generateReq(testToken, "test-handle")
+      val req = DeleteDatastoreRequestor.generateReq(testAuth, "test-handle")
 
-      req isDatastoresApi ("/delete_datastore", "POST", testToken)
+      req isDatastoresApi ("/delete_datastore", "POST", testAuth)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
     }
@@ -98,20 +98,20 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "url that is set authorization header" in {
-      val req = ListDatastoresRequestor.generateReq(testToken, null)
+      val req = ListDatastoresRequestor.generateReq(testAuth, null)
 
-      req isDatastoresApi ("/list_datastores", "POST", testToken)
+      req isDatastoresApi ("/list_datastores", "POST", testAuth)
     }
   }
 
   // datastore/await for list_datastores result
   "AwaitListDatastoresRequestor#generateReq" should {
     "url that is set get parameter list_datastores and authorization header" in {
-      val req = AwaitListDatastoresRequestor.generateReq(testToken, ListAwaitParameter("test-await-token"))
+      val req = AwaitListDatastoresRequestor.generateReq(testAuth, ListAwaitParameter("test-await-token"))
 
       req.url must startWith(s"${baseUrl}/await")
       req.toRequest.getMethod must equalTo("GET")
-      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(testToken))
+      req.toRequest.getHeaders.get("Authorization").get(0) must equalTo(authHeaderValue(testAuth))
       req.toRequest.getQueryParams.size must equalTo(1)
       req.toRequest.getQueryParams.get("list_datastores").get(0) must equalTo("""{"token":"test-await-token"}""")
     }
@@ -124,13 +124,13 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "throw exception when handle parameter is empty string" in {
-      GetSnapshotRequestor.generateReq(testToken, "") must throwA[IllegalArgumentException]
+      GetSnapshotRequestor.generateReq(testAuth, "") must throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter handle and authorization header" in {
-      val req = GetSnapshotRequestor.generateReq(testToken, "test-handle")
+      val req = GetSnapshotRequestor.generateReq(testAuth, "test-handle")
 
-      req isDatastoresApi ("/get_snapshot", "POST", testToken)
+      req isDatastoresApi ("/get_snapshot", "POST", testAuth)
       req.toRequest.getParams.size() must equalTo(1)
       req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
     }
@@ -149,33 +149,33 @@ class DatastoreApiRequestorTest extends Specification {
     }
 
     "throw exception when change list parameter is null" in {
-      PutDeltaRequestor.generateReq(testToken, null) must throwA[IllegalArgumentException]
+      PutDeltaRequestor.generateReq(testAuth, null) must throwA[IllegalArgumentException]
     }
 
     "throw exception when handle of change list parameter is null" in {
-      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter(null, 0, None, List(insert))) must
+      PutDeltaRequestor.generateReq(testAuth, PutDeltaParameter(null, 0, None, List(insert))) must
       throwA[IllegalArgumentException]
     }
 
     "throw exception when handle of change list parameter is empty string" in {
-      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("", 0, None, List(insert))) must
+      PutDeltaRequestor.generateReq(testAuth, PutDeltaParameter("", 0, None, List(insert))) must
       throwA[IllegalArgumentException]
     }
 
     "throw exception when change list is null" in {
-      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("test-handle", 0, None, null)) must
+      PutDeltaRequestor.generateReq(testAuth, PutDeltaParameter("test-handle", 0, None, null)) must
       throwA[IllegalArgumentException]
     }
 
     "throw exception when change list is null" in {
-      PutDeltaRequestor.generateReq(testToken, PutDeltaParameter("test-handle", 0, None, List.empty)) must
+      PutDeltaRequestor.generateReq(testAuth, PutDeltaParameter("test-handle", 0, None, List.empty)) must
       throwA[IllegalArgumentException]
     }
 
     "url that is set post parameter handle and authorization header" in {
-      val req = PutDeltaRequestor.generateReq(testToken, params)
+      val req = PutDeltaRequestor.generateReq(testAuth, params)
 
-      req isDatastoresApi ("/put_delta", "POST", testToken)
+      req isDatastoresApi ("/put_delta", "POST", testAuth)
       req.toRequest.getParams.size() must equalTo(3)
       req.toRequest.getParams.get("handle").get(0) must equalTo("test-handle")
       req.toRequest.getParams.get("rev").get(0) must equalTo("0")

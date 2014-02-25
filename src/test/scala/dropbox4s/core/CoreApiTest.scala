@@ -15,7 +15,7 @@ class CoreApiTest extends Specification with CoreApi {
 
   import dropbox4s.datastore.TestConstants._
 
-  implicit val token = testUser1
+  implicit val auth = testUser1Auth
 
   val createFile = new java.io.File(this.getClass.getResource("/testfiles/forupload.txt").toURI)
   val rewriteFile = new java.io.File(this.getClass.getResource("/testfiles/forupdate.txt").toURI)

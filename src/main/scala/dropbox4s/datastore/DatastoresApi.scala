@@ -17,11 +17,11 @@ package dropbox4s.datastore
  */
 
 import dropbox4s.datastore.internal.http._
-import dropbox4s.commons.auth.AccessToken
 import dropbox4s.datastore.internal.jsonresponse._
 import scala.Some
 import dropbox4s.datastore.model._
 import dropbox4s.datastore.internal.requestparameter._
+import com.dropbox.core.DbxAuthFinish
 
 /**
  * @author mao.instantlife at gmail.com
@@ -33,22 +33,22 @@ object DatastoresApi {
    *
    * @param dsid datastore id
    * @param createFlag create datastore if dsid not exists.
-   * @param token access token
+   * @param auth authenticate finish class has access token
    * @return Datastore instance
    */
-  def get(dsid: String, createFlag: Boolean = false)(implicit token: AccessToken) =
-    if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor.request(token, dsid)))
-    else Datastore(dsid, Some(GetDatastoreRequestor.request(token, dsid)))
+  def get(dsid: String, createFlag: Boolean = false)(implicit auth: DbxAuthFinish) =
+    if (createFlag) Datastore(dsid, Some(GetOrCreateDatastoreRequestor.request(auth, dsid)))
+    else Datastore(dsid, Some(GetDatastoreRequestor.request(auth, dsid)))
 
   val orCreate = true
 
   /**
    * get list of datastores.
    *
-   * @param token access token
+   * @param auth authenticate finish class has access token
    * @return datastore list and token
    */
-  def listDatastores(implicit token: AccessToken) = ListDatastoresRequestor.request(token)
+  def listDatastores(implicit auth: DbxAuthFinish) = ListDatastoresRequestor.request(auth)
 
   implicit def listDatastoresToList(list: ListDatastoresResult) = list.datastores
   implicit def datastoresToGetOrCreateResult(ds: Datastore) = ds.result.getOrElse(nullGetOrCreateDsResult)
@@ -57,27 +57,27 @@ object DatastoresApi {
     /**
      * delete datastore.
      *
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return delete result
      */
-    def delete(implicit token: AccessToken) = DeleteDatastoreRequestor.request(token, ds.handle)
+    def delete(implicit auth: DbxAuthFinish) = DeleteDatastoreRequestor.request(auth, ds.handle)
 
     /**
      * get snapshot data list.
      *
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return Snapshot instance
      */
-    def snapshot(implicit token: AccessToken) = Snapshot(ds.handle, GetSnapshotRequestor.request(token, ds.handle))
+    def snapshot(implicit auth: DbxAuthFinish) = Snapshot(ds.handle, GetSnapshotRequestor.request(auth, ds.handle))
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {
-    def await(implicit token: AccessToken) = AwaitListDatastoresRequestor.request(token, ListAwaitParameter(listDs.token))
+    def await(implicit auth: DbxAuthFinish) = AwaitListDatastoresRequestor.request(auth, ListAwaitParameter(listDs.token))
   }
 
   implicit class RichTable[T](val table: Table[T]) {
-    private def putDeltaRequest(ops: List[DataOperation], token: AccessToken) =
-      PutDeltaRequestor.request(token, PutDeltaParameter(table.handle, table.rev, None, ops))
+    private def putDeltaRequest(ops: List[DataOperation], auth: DbxAuthFinish) =
+      PutDeltaRequestor.request(auth, PutDeltaParameter(table.handle, table.rev, None, ops))
 
     private def rowUpdateOps(rowid: String, other: T) =
       table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _))
@@ -87,13 +87,13 @@ object DatastoresApi {
      * Note: if row id of parameter is conflict, throw IllegalArgumentException.
      *
      * @param rows (variable parameter) rows array to insert.
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def insert(rows: TableRow[T]*)(implicit token: AccessToken) = {
+    def insert(rows: TableRow[T]*)(implicit auth: DbxAuthFinish) = {
       require(rows.size == rows.toList.map(_.rowid).distinct.size)
 
-      putDeltaRequest(rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data))), token)
+      putDeltaRequest(rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data))), auth)
     }
 
     /**
@@ -101,51 +101,51 @@ object DatastoresApi {
      * Note: if rowid of parameter is conflict, distinct array before execute.
      *
      * @param rowids (variable parameter) row id array to delete.
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def delete(rowids: String*)(implicit token: AccessToken) =
-      putDeltaRequest(rowids.distinct.toList.map(DataDelete(table.tid, _)), token)
+    def delete(rowids: String*)(implicit auth: DbxAuthFinish) =
+      putDeltaRequest(rowids.distinct.toList.map(DataDelete(table.tid, _)), auth)
 
     /**
      * delete rows from datastore by condition.
      *
      * @param where delete condition
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def delete(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) =
-      putDeltaRequest(table.select(where).map(row => DataDelete(table.tid, row.rowid)), token)
+    def delete(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) =
+      putDeltaRequest(table.select(where).map(row => DataDelete(table.tid, row.rowid)), auth)
 
     /**
      * delete all rows of table.
      *
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def truncate(implicit token: AccessToken) =
-      putDeltaRequest(table.rows.map(row => DataDelete(table.tid, row.rowid)), token)
+    def truncate(implicit auth: DbxAuthFinish) =
+      putDeltaRequest(table.rows.map(row => DataDelete(table.tid, row.rowid)), auth)
 
     /**
      * update row by rowid
      * @param rowid rowid to update
      * @param other update row data
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def update(rowid: String, other: T)(implicit token: AccessToken) =
-      putDeltaRequest(rowUpdateOps(rowid, other), token)
+    def update(rowid: String, other: T)(implicit auth: DbxAuthFinish) =
+      putDeltaRequest(rowUpdateOps(rowid, other), auth)
 
     /**
      * update rows by condition.
      *
      * @param set function for update data
      * @param where update condition
-     * @param token access token
+     * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit token: AccessToken) =
-      putDeltaRequest(table.select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, token)
+    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) =
+      putDeltaRequest(table.select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, auth)
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)

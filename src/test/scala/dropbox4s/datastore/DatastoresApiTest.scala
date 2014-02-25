@@ -18,7 +18,7 @@ import scala.Some
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
 
-  implicit val token = TestConstants.testUser1
+  implicit val auth = TestConstants.testUser1Auth
   val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
 
   val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0)))

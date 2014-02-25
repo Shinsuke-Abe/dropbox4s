@@ -29,7 +29,7 @@ Return value of DSL is dropbox-core-sdk's classes.
 Detail these classes, see [official documents](http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/)<br/>
 
 
-First, trait dropbox4s.core.CoreApi mixin to your application class and implements some fields and access token set to implicit value.
+First, trait dropbox4s.core.CoreApi mixin to your application class and implements some fields and DbxAuthFinish instance set to implicit value.
 ```Scala
 class YourApplication extends CoreApi {
   // implements fields
@@ -38,8 +38,8 @@ class YourApplication extends CoreApi {
   override val locale = Locale.JAPANESE // if customize local, override local field
 
 
-  // user's access token
-  implicit val token = AccessToken("user token")
+  // user's authenticate information
+  implicit val auth: DbxAuthFinish = webAuth.finish // how to get oauth access token, see dropbox-core-sdk document.
 
 
   // application code
@@ -63,14 +63,14 @@ Datastore API of Dropbox4S is written by Scala. Without base sdk.<br/>
 Return values defined on this library.<br/>
 
 
-Import dropbox4s.datastore.DatastoresApi object for using Datastore API DSL and access token set to implicit value.
+Import dropbox4s.datastore.DatastoresApi object for using Datastore API DSL and DbxAuthFinish instance set to implicit value.
 
 ```Scala
 class YourApplicataion {
   import DatastoresApi._
 
-  // user's access token
-  implicit val token = AccessToken("user token")
+  // user's authenticate information
+  implicit val auth: DbxAuthFinish = webAuth.finish // how to get oauth access token, see dropbox-core-sdk document.
 
   // application code
 }

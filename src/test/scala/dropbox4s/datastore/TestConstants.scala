@@ -1,7 +1,7 @@
 package dropbox4s.datastore
 
 import java.util.Properties
-import dropbox4s.commons.auth.AccessToken
+import com.dropbox.core.DbxAuthFinish
 
 /**
  * @author mao.instantlife at gmail.com
@@ -14,8 +14,9 @@ object TestConstants {
 
   istream.close
 
-  val testUser1 = AccessToken(prop.getProperty("usertoken"))
+  val testUser1Token = prop.getProperty("usertoken")
   val testUser1Id = prop.getProperty("userid").toLong
+  val testUser1Auth = new DbxAuthFinish(testUser1Token, testUser1Id.toString, null)
 
   val downloadRoot = prop.getProperty("downloadRoot")
 }

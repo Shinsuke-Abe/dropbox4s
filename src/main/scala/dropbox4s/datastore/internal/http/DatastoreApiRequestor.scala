@@ -22,14 +22,10 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.JsonDSL._
 import org.json4s.JValue
-import dropbox4s.datastore.internal.jsonresponse.DeleteDatastoreResult
-import dropbox4s.commons.auth.AccessToken
-import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
-import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
 import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, PutDeltaParameter}
 import scala.Some
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
+import com.dropbox.core.DbxAuthFinish
 
 /**
  * @author mao.instantlife at gmail.com
@@ -47,21 +43,21 @@ trait DatastoreApiRequestor[ParamType, ResType] {
 
   /**
    * Set authenticate header of OAuth2 for datastore api request header.
-   * @param token Access token
+   * @param auth authenticate finish class has access token
    * @return request set authenticate header
    */
-  protected def authHeader(token: AccessToken) = Map("Authorization" -> s"Bearer ${token.token}")
+  protected def authHeader(auth: DbxAuthFinish) = Map("Authorization" -> s"Bearer ${auth.accessToken}")
 
   /**
    * Generate endpoint request.
-   * @param token Access token
+   * @param auth authenticate finish class has access token
    * @param input decide by implements Requestor
    * @return http request
    */
-  private[dropbox4s] def generateReq(token: AccessToken, input: ParamType) = {
-    require(Option(token).isDefined && parameterRequirement(input))
+  private[dropbox4s] def generateReq(auth: DbxAuthFinish, input: ParamType) = {
+    require(Option(auth).isDefined && parameterRequirement(input))
 
-    baseUrl <:< authHeader(token) << requestParameter(input)
+    baseUrl <:< authHeader(auth) << requestParameter(input)
   }
 
   /**
@@ -83,12 +79,12 @@ trait DatastoreApiRequestor[ParamType, ResType] {
   /**
    * Request to datastore api endpoint.
    *
-   * @param token Access token
+   * @param auth authenticate finish class has access token
    * @param input decide by implements Requestor
    * @return decide by implements Requestor
    */
-  def request(token: AccessToken, input: ParamType)(implicit m: Manifest[ResType]): ResType = {
-    val request = Http(generateReq(token, input) OK as.String)
+  def request(auth: DbxAuthFinish, input: ParamType)(implicit m: Manifest[ResType]): ResType = {
+    val request = Http(generateReq(auth, input) OK as.String)
     val response = parse(request())
 
     verifyResponse(response)
@@ -170,7 +166,7 @@ object ListDatastoresRequestor extends DatastoreApiRequestor[AnyRef, ListDatasto
 
   protected def requestParameter(input: AnyRef) = noParams
 
-  def request(token: AccessToken): ListDatastoresResult = request(token, null)
+  def request(auth: DbxAuthFinish): ListDatastoresResult = request(auth, null)
 }
 
 /**
@@ -218,9 +214,9 @@ object AwaitListDatastoresRequestor extends DatastoreApiRequestor[ListAwaitParam
   protected def requestParameter(input: ListAwaitParameter) =
     Map("list_datastores" -> compact(render(input.toJson)))
 
-  override   private[dropbox4s] def generateReq(token: AccessToken, input: ListAwaitParameter) = {
-    require(Option(token).isDefined && parameterRequirement(input))
+  override private[dropbox4s] def generateReq(auth: DbxAuthFinish, input: ListAwaitParameter) = {
+    require(Option(auth).isDefined && parameterRequirement(input))
 
-    baseUrl <:< authHeader(token) <<? requestParameter(input)
+    baseUrl <:< authHeader(auth) <<? requestParameter(input)
   }
 }
