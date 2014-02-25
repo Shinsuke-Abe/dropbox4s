@@ -5,8 +5,11 @@ Supported Scala version is 2.10.x.
 
 
 ## Install
-In preparation.<br/>
-If you use beta version, please build these code and publish local.
+Add the following dependencies to build.sbt.<br/>
+```Scala
+resolvers += "bintray" at "http://dl.bintray.com/shinsuke-abe/maven"
+libraryDependencies += "com.github.Shinsuke-Abe" %% "dropbox4s" % "0.1.0"
+```
 
 
 ## Dependencies with other libraries
