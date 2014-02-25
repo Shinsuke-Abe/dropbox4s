@@ -30,7 +30,7 @@ trait CoreApi {
   val version: String
   val locale: Locale = Locale.getDefault
 
-  lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.0.1"
+  lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.1.0"
   lazy val requestConfig = new DbxRequestConfig(clientIdentifier, locale.toString)
 
   lazy val client = new DbxClient(requestConfig, _: String)
