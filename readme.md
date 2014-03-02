@@ -23,7 +23,7 @@ Note: These libraries on latest stable at Feburary 18,2014.
 
 
 ## How to use
-Dropbox4S supports Core API and Dropbox API.<br/>
+Dropbox4S supports Core API and Datastore API.<br/>
 
 
 ### Using Core API
