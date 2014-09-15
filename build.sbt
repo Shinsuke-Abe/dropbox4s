@@ -4,6 +4,8 @@ organization := "com.github.Shinsuke-Abe"
 
 scalaVersion := "2.11.2"
 
+crossScalaVersions := Seq("2.10.1", "2.11.2")
+
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.4.2" % "test",
   "org.mockito" % "mockito-core" % "1.9.5" % "test",
