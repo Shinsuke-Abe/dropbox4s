@@ -2,7 +2,7 @@ name := "dropbox4s"
 
 organization := "com.github.Shinsuke-Abe"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.2"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.3.7" % "test",
