@@ -5,10 +5,10 @@ organization := "com.github.Shinsuke-Abe"
 scalaVersion := "2.11.2"
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "2.3.7" % "test",
+  "org.specs2" %% "specs2" % "2.4.2" % "test",
   "org.mockito" % "mockito-core" % "1.9.5" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
-  "org.json4s" %% "json4s-native" % "3.2.6",
+  "org.json4s" %% "json4s-native" % "3.2.10",
   "com.dropbox.core" % "dropbox-core-sdk" % "[1.7,1.8)"
 )
 
