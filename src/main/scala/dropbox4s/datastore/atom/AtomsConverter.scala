@@ -2,6 +2,8 @@ package dropbox4s.datastore.atom
 
 import java.sql.Timestamp
 
+import org.apache.commons.codec.binary.Base64
+
 /**
  * @author mao.instantlife at gmail.com
  */
@@ -23,4 +25,8 @@ object AtomsConverter {
   implicit def timestampToWrappedTimestamp(value: Timestamp): WrappedTimestamp = WrappedTimestamp(value.getTime.toString)
 
   implicit def longToWrappedTimestamp(value: Long): WrappedTimestamp = WrappedTimestamp(value.toString)
+
+  // for wrapped_bytes
+  implicit def byteArrayToWrappedBytes(value: Array[Byte]): WrappedBytes =
+    WrappedBytes(Base64.encodeBase64URLSafeString(value))
 }

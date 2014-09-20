@@ -6,22 +6,13 @@ package dropbox4s.datastore.atom
 
 import java.sql.Timestamp
 
-import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.apache.commons.codec.binary.Base64
 import org.specs2.mutable._
 
 class AtomsTest extends Specification {
-  implicit val format = DefaultFormats
-
   import dropbox4s.datastore.atom.AtomsConverter._
 
   "WrappedInt" should {
-    "parse json value to type" in {
-      val testJsonValue = parse("""{"I": "12345"}""")
-
-      testJsonValue.extract[WrappedInt].I.toLong must equalTo(12345l)
-    }
-
     "convert type to Int with converter" in {
       assertIntConversion(WrappedInt("3456"), 3456)
     }
@@ -83,6 +74,18 @@ class AtomsTest extends Specification {
 
     def assertWrappedTimestampConversion(actual: WrappedTimestamp, expected: WrappedTimestamp) = {
       // for test implicit conversion
+      actual must equalTo(expected)
+    }
+  }
+
+  "WrappedBytes" should {
+    "convert byte seqence to type with converter" in {
+      val testArr = Array[Byte](123.toByte, 222.toByte)
+
+      assertWrappedBytesConversion(WrappedBytes(Base64.encodeBase64URLSafeString(testArr)), testArr)
+    }
+
+    def assertWrappedBytesConversion(actual: WrappedBytes, expected: WrappedBytes) = {
       actual must equalTo(expected)
     }
   }
