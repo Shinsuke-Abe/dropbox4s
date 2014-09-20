@@ -4,12 +4,16 @@ package dropbox4s.datastore.atom
  * @author mao.instantlife at gmail.com
  */
 
-import org.specs2.mutable._
+import java.sql.Timestamp
+
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.specs2.mutable._
 
 class AtomsTest extends Specification {
   implicit val format = DefaultFormats
+
+  import dropbox4s.datastore.atom.AtomsConverter._
 
   "WrappedInt" should {
     "parse json value to type" in {
@@ -22,7 +26,6 @@ class AtomsTest extends Specification {
       WrappedInt(2345l.toString).toJsonValue must equalTo(parse("""{"I":"2345"}"""))
     }
 
-    import AtomsConverter._
     "convert type to Int with converter" in {
       assertIntConversion(WrappedInt("3456"), 3456)
     }
@@ -55,12 +58,40 @@ class AtomsTest extends Specification {
     }
   }
 
+  "WrappedTimestamp" should {
+    "convert type to Timestamp with converter" in {
+      assertTimestampConversion(WrappedTimestamp("12345"), new Timestamp(12345L))
+    }
+
+    "convert type to Long with converter" in {
+      assertLongConversion(WrappedTimestamp("23456"), 23456L)
+    }
+
+    def assertTimestampConversion(actual: Timestamp, expected: Timestamp) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+
+    def assertLongConversion(actual: Long, expected: Long) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+
+    "convert Timestamp to type with converter" in {
+      assertWrappedTimestampConversion(new Timestamp(2222L), WrappedTimestamp("2222"))
+    }
+
+    "convert Long to type with converter" in {
+      assertWrappedTimestampConversion(3333L, WrappedTimestamp("3333"))
+    }
+
+    def assertWrappedTimestampConversion(actual: WrappedTimestamp, expected: WrappedTimestamp) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+  }
+
   // WrappedSpecial
-  // WrappedTimestamp(implemented, but not satisfied specification)
   // WrappedBytes
   // Dbase64 encode utilities
-  // AtomsUtility
-  // Int -> WrappedInt
-  // Long -> WrapedInt
-  // Short -> WrappedInt
 }
