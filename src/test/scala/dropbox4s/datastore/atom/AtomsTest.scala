@@ -32,10 +32,25 @@ class AtomsTest extends Specification {
     }
 
     def assertIntConversion(actual: Int, expected: Int) = {
+      // for test implicit conversion
       actual must equalTo(expected)
     }
 
     def assertLongConversion(actual: Long, expected: Long) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+
+    "convert Int to type with converter" in {
+      assertWrappedIntConversion(9987, WrappedInt("9987"))
+    }
+
+    "convert Long to type with converter" in {
+      assertWrappedIntConversion(8879l, WrappedInt("8879"))
+    }
+
+    def assertWrappedIntConversion(actual: WrappedInt, expected: WrappedInt) = {
+      // for test implicit conversion
       actual must equalTo(expected)
     }
   }
