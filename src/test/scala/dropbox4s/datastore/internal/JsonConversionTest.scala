@@ -4,16 +4,11 @@ package dropbox4s.datastore.internal
  * @author mao.instantlife at gmail.com
  */
 
-import org.specs2.mutable._
+import dropbox4s.datastore.atom.WrappedTimestamp
+import dropbox4s.datastore.internal.jsonresponse.{DsInfo, GetOrCreateDatastoreResult, ListDatastoresResult, _}
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import dropbox4s.datastore.internal.jsonresponse._
-import dropbox4s.datastore.internal.jsonresponse.WrappedTimestamp
-import scala.Some
-import dropbox4s.datastore.internal.jsonresponse.DsInfo
-import dropbox4s.datastore.internal.jsonresponse.ListDatastoresResult
-import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
-import dropbox4s.datastore.TestDummyData
+import org.specs2.mutable._
 
 class JsonConversionTest extends Specification {
   implicit val format = DefaultFormats
