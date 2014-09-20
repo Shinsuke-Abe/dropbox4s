@@ -22,10 +22,6 @@ class AtomsTest extends Specification {
       testJsonValue.extract[WrappedInt].I.toLong must equalTo(12345l)
     }
 
-    "parse type value to json" in {
-      WrappedInt(2345l.toString).toJsonValue must equalTo(parse("""{"I":"2345"}"""))
-    }
-
     "convert type to Int with converter" in {
       assertIntConversion(WrappedInt("3456"), 3456)
     }
