@@ -103,6 +103,4 @@ class AtomsTest extends Specification {
   }
 
   // WrappedSpecial
-  // WrappedBytes
-  // Dbase64 encode utilities
 }
