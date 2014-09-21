@@ -79,13 +79,25 @@ class AtomsTest extends Specification {
   }
 
   "WrappedBytes" should {
-    "convert byte seqence to type with converter" in {
+    "convert type to byte array with converter" in {
+      val testArr = Array[Byte](333.toByte, 444.toByte)
+
+      assertBytesConversion(WrappedBytes(Base64.encodeBase64URLSafeString(testArr)), testArr)
+    }
+
+    def assertBytesConversion(actual: Array[Byte], expected: Array[Byte]) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+
+    "convert byte array to type with converter" in {
       val testArr = Array[Byte](123.toByte, 222.toByte)
 
-      assertWrappedBytesConversion(WrappedBytes(Base64.encodeBase64URLSafeString(testArr)), testArr)
+      assertWrappedBytesConversion(testArr, WrappedBytes(Base64.encodeBase64URLSafeString(testArr)))
     }
 
     def assertWrappedBytesConversion(actual: WrappedBytes, expected: WrappedBytes) = {
+      // for test implicit conversion
       actual must equalTo(expected)
     }
   }

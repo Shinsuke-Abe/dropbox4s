@@ -27,6 +27,8 @@ object AtomsConverter {
   implicit def longToWrappedTimestamp(value: Long): WrappedTimestamp = WrappedTimestamp(value.toString)
 
   // for wrapped_bytes
+  implicit def wrappedBytesToByteArray(wrappedBytes: WrappedBytes): Array[Byte] = Base64.decodeBase64(wrappedBytes.B)
+
   implicit def byteArrayToWrappedBytes(value: Array[Byte]): WrappedBytes =
     WrappedBytes(Base64.encodeBase64URLSafeString(value))
 }
