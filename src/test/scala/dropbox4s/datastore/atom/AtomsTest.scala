@@ -102,5 +102,7 @@ class AtomsTest extends Specification {
     }
   }
 
-  // WrappedSpecial
+  // WrappedSpecial has no implicit conversion.
+  // If you set WrappedSpecial to field, use Either[T, WrappedSpecial] type,
+  // and set WrappedSpecial value object expressly.
 }
