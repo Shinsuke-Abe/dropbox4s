@@ -16,16 +16,15 @@ package dropbox4s.datastore.internal.http
  * limitations under the License.
  */
 
-import dispatch._, Defaults._
-import dropbox4s.datastore.internal.jsonresponse._
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.JsonDSL._
-import org.json4s.JValue
-import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, PutDeltaParameter}
-import scala.Some
-import dropbox4s.commons.DropboxException
 import com.dropbox.core.DbxAuthFinish
+import dispatch.Defaults._
+import dispatch._
+import dropbox4s.commons.DropboxException
+import dropbox4s.datastore.internal.jsonresponse._
+import dropbox4s.datastore.internal.requestparameter.{CreateDatastoreParameter, ListAwaitParameter, PutDeltaParameter}
+import org.json4s.JsonDSL._
+import org.json4s.{JValue, _}
+import org.json4s.native.JsonMethods._
 
 /**
  * @author mao.instantlife at gmail.com
@@ -121,6 +120,20 @@ trait DatastoreApiRequestor[ParamType, ResType] {
   }
 
   private def parseJsonToclass(response: JValue)(implicit m: Manifest[ResType]) = response.extract[ResType]
+}
+
+/**
+ * create_datastore
+ */
+object CreateDatastoreRequestor extends DatastoreApiRequestor[CreateDatastoreParameter, GetOrCreateDatastoreResult] {
+  val endpoint: String = "create_datastore"
+
+  protected def parameterRequirement(input: CreateDatastoreParameter) =
+    Option(input).isDefined &&
+      Option(input.key).isDefined && !input.key.isEmpty
+
+  override protected def requestParameter(input: CreateDatastoreParameter) =
+    Map("dsid" -> input.dsid, "key" -> input.key)
 }
 
 /**

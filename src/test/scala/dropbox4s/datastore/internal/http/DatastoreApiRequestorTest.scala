@@ -10,7 +10,7 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import dropbox4s.datastore.TestDummyData
 import dispatch.Req
-import dropbox4s.datastore.internal.requestparameter.{ListAwaitParameter, DataInsert, PutDeltaParameter}
+import dropbox4s.datastore.internal.requestparameter.{CreateDatastoreParameter, ListAwaitParameter, DataInsert, PutDeltaParameter}
 import com.dropbox.core.DbxAuthFinish
 
 class DatastoreApiRequestorTest extends Specification {
@@ -31,6 +31,31 @@ class DatastoreApiRequestorTest extends Specification {
   "DatastoreApiRequestor#request" should {
     "throw exception when unauth request is failed" in {
       GetOrCreateDatastoreRequestor.request(testAuth, "failed-request") must throwA[ExecutionException]
+    }
+  }
+
+  // datastores/create_datastore
+  "CreateDatastoreRequestor#generateReq" should {
+    "throw exception when both parameter is null" in {
+      CreateDatastoreRequestor.generateReq(null, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when input parameter is null value" in {
+      CreateDatastoreRequestor.generateReq(testAuth, null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception when input parameter key value is null" in {
+      CreateDatastoreRequestor.generateReq(testAuth, CreateDatastoreParameter(null)) must throwA[IllegalArgumentException]
+    }
+
+    "url that is set post parameter dsid and key, and authorization header" in {
+      val testParam = CreateDatastoreParameter("test-shareable-datastore")
+      val req = CreateDatastoreRequestor.generateReq(testAuth, testParam)
+
+      req isDatastoresApi("/create_datastore", "POST", testAuth)
+      req.toRequest.getParams.size must equalTo(2)
+      req.toRequest.getParams.get("key").get(0) must equalTo(testParam.key)
+      req.toRequest.getParams.get("dsid").get(0) must equalTo(testParam.dsid)
     }
   }
 
