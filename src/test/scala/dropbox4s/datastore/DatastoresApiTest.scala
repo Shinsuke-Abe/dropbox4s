@@ -4,6 +4,7 @@ package dropbox4s.datastore
  * @author mao.instantlife at gmail.com
  */
 
+import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
 import org.specs2.mutable._
 import java.util.Date
 import dropbox4s.datastore.model.{Table, TableRow, Snapshot, Datastore}
@@ -171,12 +172,27 @@ class DatastoresApiTest extends Specification {
   }
 
   "shareable datastore api" should {
+    val testDsName = s"test_shareable_ds_${createTimeStamp}"
+    val createdDs = createShareable(s"$testDsName")
+
     "throw exception on creation with null key" in {
       createShareable(null) must throwA[IllegalArgumentException]
     }
 
     "throw exception on creation with empty key" in {
       createShareable("") must throwA[IllegalArgumentException]
+    }
+
+    "create shareable datastore" in {
+      val shareableDatastoreId = CreateDatastoreParameter(testDsName).dsid
+
+      createdDs.dsid must equalTo(shareableDatastoreId)
+      // TODO check role is 3000(Owner)
+
+      val dsList = listDatastores
+      dsList.exists(_.dsid == shareableDatastoreId) must beTrue
+
+      dsList.await.list_datastores.get.exists(_.dsid == shareableDatastoreId) must beTrue
     }
   }
   // TODO shareable datastore
