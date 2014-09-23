@@ -170,6 +170,20 @@ class DatastoresApiTest extends Specification {
     }
   }
 
+  "shareable datastore api" should {
+    "throw exception on creation with null key" in {
+      createShareable(null) must throwA[IllegalArgumentException]
+    }
+  }
+  // TODO shareable datastore
+  // TODO shareable datastore create
+  // TODO list_datastore has shareable datastore
+  // TODO remove shareable datastore
+  // TODO check shereable datastore or private datastore
+  // TODO set role to shareable datastore
+  // TODO check role for insert, update, delete data
+  // TODO get shareable datastore snapshot
+
   "snapshot" should {
     "throw exception not found datastore handle" in {
       notExistsDs.snapshot must throwA[DropboxException](message = messageNotFound)

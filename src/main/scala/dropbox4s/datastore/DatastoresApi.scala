@@ -42,6 +42,11 @@ object DatastoresApi {
 
   val orCreate = true
 
+  def createShareable(key: String)(implicit auth: DbxAuthFinish) = {
+    val parameter = CreateDatastoreParameter(key)
+    Datastore(parameter.dsid, Some(CreateDatastoreRequestor.request(auth, parameter)))
+  }
+
   /**
    * get list of datastores.
    *

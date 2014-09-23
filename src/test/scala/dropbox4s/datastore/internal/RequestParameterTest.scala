@@ -56,6 +56,10 @@ class RequestParameterTest extends Specification {
     val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
     val md = MessageDigest.getInstance("SHA-256")
 
+    "throw IllegalArgumentException if set null value for key" in {
+      CreateDatastoreParameter(null) must throwA[IllegalArgumentException]
+    }
+
     "generate dsid from key string" in {
       val testKey = s"dropbox4s-test-shareable-datastore-${createTimeStamp}"
 
