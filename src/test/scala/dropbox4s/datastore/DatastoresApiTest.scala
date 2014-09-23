@@ -174,6 +174,10 @@ class DatastoresApiTest extends Specification {
     "throw exception on creation with null key" in {
       createShareable(null) must throwA[IllegalArgumentException]
     }
+
+    "throw exception on creation with empty key" in {
+      createShareable("") must throwA[IllegalArgumentException]
+    }
   }
   // TODO shareable datastore
   // TODO shareable datastore create

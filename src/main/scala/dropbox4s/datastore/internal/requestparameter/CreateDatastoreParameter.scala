@@ -12,5 +12,5 @@ case class CreateDatastoreParameter(key: String) {
 
   val messageDigest = MessageDigest.getInstance("SHA-256")
 
-  def dsid = Base64.encodeBase64URLSafeString(messageDigest.digest(key.getBytes))
+  def dsid = "." + Base64.encodeBase64URLSafeString(messageDigest.digest(key.getBytes))
 }

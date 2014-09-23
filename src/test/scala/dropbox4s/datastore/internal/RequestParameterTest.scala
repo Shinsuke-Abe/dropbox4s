@@ -65,7 +65,7 @@ class RequestParameterTest extends Specification {
 
       md.update(testKey.getBytes)
 
-      val expectedDsid = Base64.encodeBase64URLSafeString(md.digest())
+      val expectedDsid = "." + Base64.encodeBase64URLSafeString(md.digest())
 
       CreateDatastoreParameter(testKey).dsid must equalTo(expectedDsid)
     }
