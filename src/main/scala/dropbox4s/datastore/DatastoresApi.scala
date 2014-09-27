@@ -153,5 +153,5 @@ object DatastoresApi {
       putDeltaRequest(table.select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, auth)
   }
 
-  val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false)
+  val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false, None)
 }

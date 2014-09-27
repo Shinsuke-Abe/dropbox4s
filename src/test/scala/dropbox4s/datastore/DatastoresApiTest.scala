@@ -4,17 +4,17 @@ package dropbox4s.datastore
  * @author mao.instantlife at gmail.com
  */
 
-import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
-import org.specs2.mutable._
 import java.util.Date
-import dropbox4s.datastore.model.{Table, TableRow, Snapshot, Datastore}
-import org.json4s.native.JsonMethods._
-import org.json4s._
-import org.json4s.JsonDSL._
-import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
+
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
-import scala.Some
+import dropbox4s.datastore.acl.Roles
+import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
+import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
+import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.specs2.mutable._
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
@@ -22,7 +22,7 @@ class DatastoresApiTest extends Specification {
   implicit val auth = TestConstants.testUser1Auth
   val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
 
-  val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0)))
+  val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0, false, None)))
   val messageNotFound = s"No datastore was found for handle: u'${notExistsDs.handle}'"
   def deleteOkMessage(handle: String) = s"Deleted datastore with handle: u'${handle}'"
 
@@ -46,6 +46,7 @@ class DatastoresApiTest extends Specification {
 
     "get Datastore result with orCreate flag" in {
       createdDs.dsid must equalTo(s"$testDsName")
+      createdDs.role must beNone
 
       val dsList = listDatastores
       dsList.exists(_.dsid == testDsName) must beTrue
@@ -187,17 +188,17 @@ class DatastoresApiTest extends Specification {
       val shareableDatastoreId = CreateDatastoreParameter(testDsName).dsid
 
       createdDs.dsid must equalTo(shareableDatastoreId)
-      // TODO check role is 3000(Owner)
+      createdDs.role must beSome(Roles.owner)
 
       val dsList = listDatastores
       dsList.exists(_.dsid == shareableDatastoreId) must beTrue
 
       dsList.await.list_datastores.get.exists(_.dsid == shareableDatastoreId) must beTrue
+
+      createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
     }
   }
   // TODO shareable datastore
-  // TODO shareable datastore create
-  // TODO list_datastore has shareable datastore
   // TODO remove shareable datastore
   // TODO check shereable datastore or private datastore
   // TODO set role to shareable datastore
