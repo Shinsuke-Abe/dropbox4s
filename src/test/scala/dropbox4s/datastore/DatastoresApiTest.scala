@@ -7,13 +7,14 @@ package dropbox4s.datastore
 import java.util.Date
 
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.acl.Roles
+import dropbox4s.datastore.acl.{Public, Team, Roles}
 import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
 import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
 import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.specs2.matcher.MatchResult
 import org.specs2.mutable._
 
 class DatastoresApiTest extends Specification {
@@ -173,9 +174,6 @@ class DatastoresApiTest extends Specification {
   }
 
   "shareable datastore api" should {
-    val testDsName = s"test_shareable_ds_${createTimeStamp}"
-    val createdDs = createShareable(s"$testDsName")
-
     "throw exception on creation with null key" in {
       createShareable(null) must throwA[IllegalArgumentException]
     }
@@ -185,17 +183,37 @@ class DatastoresApiTest extends Specification {
     }
 
     "create shareable datastore" in {
+      shareableDatastoreSpec("create") {(createdDs, shareableDatastoreId) =>
+        createdDs.dsid must equalTo(shareableDatastoreId)
+        createdDs.isShareable must beTrue
+        createdDs.role must beSome(Roles.owner)
+      }
+    }
+
+    "include datastore list" in {
+      shareableDatastoreSpec("get_list") { (_, shareableDatastoreId) =>
+        val dsList = listDatastores
+        dsList.exists(_.dsid == shareableDatastoreId) must beTrue
+        dsList.await.list_datastores.get.exists(_.dsid == shareableDatastoreId) must beTrue
+      }
+    }
+
+    "has assigned role to principle of shareable datastore" in {
+      shareableDatastoreSpec("for_role") { (createdDs, _) =>
+        createdDs.getAssignedRole(Public) must beNone
+        createdDs.getAssignedRole(Team) must beNone
+      }
+    }
+
+    def shareableDatastoreSpec[T](testTarget: String)(specs: (Datastore, String) => MatchResult[T]) = {
+      // create test datastore
+      val testDsName = s"test_shareable_ds_${testTarget}_${createTimeStamp}"
+      val createdDs = createShareable(s"$testDsName")
       val shareableDatastoreId = CreateDatastoreParameter(testDsName).dsid
 
-      createdDs.dsid must equalTo(shareableDatastoreId)
-      createdDs.isShareable must beTrue
-      createdDs.role must beSome(Roles.owner)
+      specs(createdDs, shareableDatastoreId)
 
-      val dsList = listDatastores
-      dsList.exists(_.dsid == shareableDatastoreId) must beTrue
-
-      dsList.await.list_datastores.get.exists(_.dsid == shareableDatastoreId) must beTrue
-
+      // delete shareable datastore
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
     }
   }
