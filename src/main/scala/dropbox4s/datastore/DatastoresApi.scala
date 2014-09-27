@@ -16,6 +16,7 @@ package dropbox4s.datastore
  * limitations under the License.
  */
 
+import dropbox4s.datastore.acl.Principle
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.internal.jsonresponse._
 import scala.Some
@@ -74,6 +75,14 @@ object DatastoresApi {
      * @return Snapshot instance
      */
     def snapshot(implicit auth: DbxAuthFinish) = Snapshot(ds.handle, GetSnapshotRequestor.request(auth, ds.handle))
+
+    def isShareable =
+      if(ds.role.isDefined) true
+      else false
+
+    def assignedRole(principle: Principle): Option[Int] = None
+
+//    def assign(role: Int) = AssigningRole(role)
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {

@@ -21,4 +21,6 @@ package dropbox4s.datastore.model
  */
 trait LikeDatastore {
   def handle: String
+
+  def role: Option[Int]
 }

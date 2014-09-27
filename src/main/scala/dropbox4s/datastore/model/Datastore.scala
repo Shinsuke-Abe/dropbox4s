@@ -16,7 +16,6 @@ package dropbox4s.datastore.model
  * limitations under the License.
  */
 
-import dropbox4s.datastore.acl.Principle
 import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
 
 /**
@@ -28,9 +27,7 @@ case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) e
     case None => null
   }
 
-  def isShareable =
-    if(result.isDefined && result.get.role.isDefined) true
-    else false
-
-  def getAssignedRole(principle: Principle): Option[Int] = None
+  def role =
+    if(result.isDefined) result.get.role
+    else None
 }

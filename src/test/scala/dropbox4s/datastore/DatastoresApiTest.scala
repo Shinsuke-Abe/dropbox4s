@@ -7,7 +7,7 @@ package dropbox4s.datastore
 import java.util.Date
 
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.acl.{Public, Team, Roles}
+import dropbox4s.datastore.acl.{Roles, Public, Team}
 import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
 import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
 import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
@@ -200,8 +200,12 @@ class DatastoresApiTest extends Specification {
 
     "has assigned role to principle of shareable datastore" in {
       shareableDatastoreSpec("for_role") { (createdDs, _) =>
-        createdDs.getAssignedRole(Public) must beNone
-        createdDs.getAssignedRole(Team) must beNone
+        createdDs.assignedRole(Public) must beNone
+        createdDs.assignedRole(Team) must beNone
+
+//        createdDs.assign(Roles.viewer to Public)
+//
+//        createdDs.assignedRole(Public) must beSome(Roles.viewer)
       }
     }
 
