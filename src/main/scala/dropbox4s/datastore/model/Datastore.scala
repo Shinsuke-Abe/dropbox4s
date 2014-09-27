@@ -26,4 +26,8 @@ case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) e
     case Some(dsresult) => dsresult.handle
     case None => null
   }
+
+  def isShareable =
+    if(result.isDefined && result.get.role.isDefined) true
+    else false
 }

@@ -46,7 +46,7 @@ class DatastoresApiTest extends Specification {
 
     "get Datastore result with orCreate flag" in {
       createdDs.dsid must equalTo(s"$testDsName")
-      createdDs.role must beNone
+      createdDs.isShareable must beFalse
 
       val dsList = listDatastores
       dsList.exists(_.dsid == testDsName) must beTrue
@@ -188,6 +188,7 @@ class DatastoresApiTest extends Specification {
       val shareableDatastoreId = CreateDatastoreParameter(testDsName).dsid
 
       createdDs.dsid must equalTo(shareableDatastoreId)
+      createdDs.isShareable must beTrue
       createdDs.role must beSome(Roles.owner)
 
       val dsList = listDatastores
