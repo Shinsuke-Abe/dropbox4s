@@ -34,7 +34,7 @@ class JsonConversionTest extends Specification {
         equalTo(
           ListDatastoresResult(
             List(
-              DsInfo("default", "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0)),
+              DsInfo("default", "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, None, None)),
             "cbd8804428bc888c7262b0193b43407033eb206b3e37bad2cc140591af3ec6f5"))
     }
 
@@ -55,7 +55,29 @@ class JsonConversionTest extends Specification {
           ListDatastoresResult(
             List(
               DsInfo("default", "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, Some(
-                InfoDict("test-title", WrappedTimestamp("test-mtime"))))),
+                InfoDict("test-title", WrappedTimestamp("test-mtime"))), None)),
+            "cbd8804428bc888c7262b0193b43407033eb206b3e37bad2cc140591af3ec6f5"))
+    }
+
+    "json convert to ListDatastoreResult with Role" in {
+      val testResult = parse(
+        """
+          |{"datastores": [
+          |   {
+          |     "handle": "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF",
+          |     "rev": 0,
+          |     "dsid": "default",
+          |     "info": {"title" : "test-title", "mtime": {"T" : "test-mtime"}},
+          |     "role": 2000}],
+          | "token": "cbd8804428bc888c7262b0193b43407033eb206b3e37bad2cc140591af3ec6f5"}
+        """.stripMargin)
+
+      testResult.extract[ListDatastoresResult] must
+        equalTo(
+          ListDatastoresResult(
+            List(
+              DsInfo("default", "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, Some(
+                InfoDict("test-title", WrappedTimestamp("test-mtime"))), Some(2000))),
             "cbd8804428bc888c7262b0193b43407033eb206b3e37bad2cc140591af3ec6f5"))
     }
   }
