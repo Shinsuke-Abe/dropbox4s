@@ -10,6 +10,6 @@ import org.json4s.JsonAST.JValue
  *
  * @author mao.instantlife at gmail.com
  */
-case class WrappedInt(I: String) {
-  def toJValue: JValue = ("I" -> I)
+case class WrappedInt(I: String) extends WrappedAtom {
+  override def toJsonValue: JValue = ("I" -> I)
 }

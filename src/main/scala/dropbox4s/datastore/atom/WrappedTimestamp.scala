@@ -10,6 +10,6 @@ import org.json4s.JsonAST.JValue
  *
  * @author mao.instantlife at gmail.com
  */
-case class WrappedTimestamp(T: String) {
-  def toJsonValue: JValue = ("T" -> T)
+case class WrappedTimestamp(T: String) extends WrappedAtom {
+  override def toJsonValue: JValue = ("T" -> T)
 }
