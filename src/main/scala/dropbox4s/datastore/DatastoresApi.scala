@@ -123,6 +123,9 @@ object DatastoresApi {
         case None => acl.insert(roleRecord)
       }
     }
+
+    def withdrawRole(principle: Principle)(implicit auth:DbxAuthFinish) =
+      accessControlTable.delete(principle.name)
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {

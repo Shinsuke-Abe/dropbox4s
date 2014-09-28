@@ -221,6 +221,10 @@ class DatastoresApiTest extends Specification {
         // update role
         createdDs.assign(Editor to Public).rev must equalTo(2)
         createdDs.assignedRole(Public) must beSome(Editor)
+
+        // clear role
+        createdDs.withdrawRole(Public).rev must equalTo(3)
+        createdDs.assignedRole(Public) must beNone
       }
     }
 
