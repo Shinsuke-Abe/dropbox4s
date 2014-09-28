@@ -7,6 +7,8 @@ package dropbox4s.datastore.atom
 import java.sql.Timestamp
 
 import org.apache.commons.codec.binary.Base64
+import org.json4s.JsonDSL._
+import org.json4s.JsonAST.JValue
 import org.specs2.mutable._
 
 class AtomsTest extends Specification {
@@ -40,6 +42,15 @@ class AtomsTest extends Specification {
     }
 
     def assertWrappedIntConversion(actual: WrappedInt, expected: WrappedInt) = {
+      // for test implicit conversion
+      actual must equalTo(expected)
+    }
+
+    "convert to JValue with toJsonValue" in {
+      assertJValueWrappedIntConversion(WrappedInt("9987").toJValue ,("I" -> "9987"))
+    }
+
+    def assertJValueWrappedIntConversion(actual: JValue, expected: JValue) = {
       // for test implicit conversion
       actual must equalTo(expected)
     }
