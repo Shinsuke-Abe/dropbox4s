@@ -214,9 +214,13 @@ class DatastoresApiTest extends Specification {
         createdDs.assignedRole(Public) must beNone
         createdDs.assignedRole(Team) must beNone
 
+        // assign new role
         createdDs.assign(Viewer to Public).rev must equalTo(1)
-
         createdDs.assignedRole(Public) must beSome(Viewer)
+
+        // update role
+        createdDs.assign(Editor to Public).rev must equalTo(2)
+        createdDs.assignedRole(Public) must beSome(Editor)
       }
     }
 

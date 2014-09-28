@@ -115,8 +115,14 @@ object DatastoresApi {
      * @param auth authenticate finish class has access token
      * @return insert datastore's record
      */
-    def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) =
-      accessControlTable.insert(roleRecord)
+    def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) = {
+      val acl = accessControlTable
+
+      acl.get(roleRecord.rowid) match {
+        case Some(_) => acl.update(roleRecord.rowid, roleRecord.data)
+        case None => acl.insert(roleRecord)
+      }
+    }
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {
