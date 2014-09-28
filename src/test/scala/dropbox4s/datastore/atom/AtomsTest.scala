@@ -14,7 +14,7 @@ import org.specs2.mutable._
 class AtomsTest extends Specification {
   import dropbox4s.datastore.atom.AtomsConverter._
 
-  def assertJValueWrappedIntConversion(actual: JValue, expected: JValue) = {
+  def assertJValueWrappedAtomConversion(actual: JValue, expected: JValue) = {
     // for test implicit conversion
     actual must equalTo(expected)
   }
@@ -52,7 +52,7 @@ class AtomsTest extends Specification {
     }
 
     "convert to JValue with toJsonValue" in {
-      assertJValueWrappedIntConversion(WrappedInt("9987").toJValue ,("I" -> "9987"))
+      assertJValueWrappedAtomConversion(WrappedInt("9987").toJsonValue ,("I" -> "9987"))
     }
   }
 
@@ -89,7 +89,7 @@ class AtomsTest extends Specification {
     }
 
     "convert to JValue with toJsonValue" in {
-      assertJValueWrappedIntConversion(WrappedTimestamp("9999").toJsonValue, ("T" -> "9999"))
+      assertJValueWrappedAtomConversion(WrappedTimestamp("9999").toJsonValue, ("T" -> "9999"))
     }
   }
 
@@ -114,6 +114,12 @@ class AtomsTest extends Specification {
     def assertWrappedBytesConversion(actual: WrappedBytes, expected: WrappedBytes) = {
       // for test implicit conversion
       actual must equalTo(expected)
+    }
+
+    "convert to JValue with toJsonValue" in {
+      val testString = Base64.encodeBase64URLSafeString(Array[Byte](123.toByte, 222.toByte))
+
+      assertJValueWrappedAtomConversion(WrappedBytes(testString).toJsonValue, ("B" -> testString))
     }
   }
 
