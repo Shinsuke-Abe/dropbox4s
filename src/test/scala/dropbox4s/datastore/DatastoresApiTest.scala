@@ -7,10 +7,12 @@ package dropbox4s.datastore
 import java.util.Date
 
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.acl.{Roles, Public, Team}
+import dropbox4s.datastore.acl._
 import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
-import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
+import dropbox4s.datastore.internal.requestparameter.{PutDeltaParameter, CreateDatastoreParameter}
 import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
+import org.json4s.JValue
+import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -186,7 +188,18 @@ class DatastoresApiTest extends Specification {
       shareableDatastoreSpec("create") {(createdDs, shareableDatastoreId) =>
         createdDs.dsid must equalTo(shareableDatastoreId)
         createdDs.isShareable must beTrue
-        createdDs.role must beSome(Roles.owner)
+
+        import dropbox4s.datastore.atom.AtomsConverter._
+
+        def assertRole(actual: Option[Int], expected: Int) = {
+          actual must beSome(expected)
+        }
+
+        assertRole(createdDs.role, Owner.role)
+
+        val getFromApi = get(shareableDatastoreId)
+
+        getFromApi.handle must equalTo(createdDs.handle)
       }
     }
 
@@ -203,9 +216,9 @@ class DatastoresApiTest extends Specification {
         createdDs.assignedRole(Public) must beNone
         createdDs.assignedRole(Team) must beNone
 
-//        createdDs.assign(Roles.viewer to Public)
-//
-//        createdDs.assignedRole(Public) must beSome(Roles.viewer)
+        createdDs.assign(Viewer to Public).rev must equalTo(1)
+
+        createdDs.assignedRole(Public) must beSome(Viewer)
       }
     }
 
@@ -222,7 +235,7 @@ class DatastoresApiTest extends Specification {
     }
   }
   // TODO shareable datastore
-  // TODO set role to shareable datastore
+  // TODO remove role from principle
   // TODO check role for insert, update, delete data
   // TODO get shareable datastore snapshot
 

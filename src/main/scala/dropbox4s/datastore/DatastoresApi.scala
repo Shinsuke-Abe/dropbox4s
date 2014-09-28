@@ -16,10 +16,11 @@ package dropbox4s.datastore
  * limitations under the License.
  */
 
-import dropbox4s.datastore.acl.Principle
+import dropbox4s.datastore.acl.{Role, AssigningRole, Principle}
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.internal.jsonresponse._
-import scala.Some
+import org.json4s.JsonDSL._
+import org.json4s.JsonAST.JValue
 import dropbox4s.datastore.model._
 import dropbox4s.datastore.internal.requestparameter._
 import com.dropbox.core.DbxAuthFinish
@@ -59,6 +60,8 @@ object DatastoresApi {
   implicit def listDatastoresToList(list: ListDatastoresResult) = list.datastores
   implicit def datastoresToGetOrCreateResult(ds: Datastore) = ds.result.getOrElse(nullGetOrCreateDsResult)
 
+  implicit def generateAssigningRoleTable(role: Role) = AssigningRole(role)
+
   implicit class RichDataStore(val ds: LikeDatastore) {
     /**
      * delete datastore.
@@ -80,9 +83,15 @@ object DatastoresApi {
       if(ds.role.isDefined) true
       else false
 
-    def assignedRole(principle: Principle): Option[Int] = None
+    def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = snapshot.table(":acl")(roleConverter).get(principle.name) match {
+      case Some(roleRecord) => Some(roleRecord.data)
+      case None => None
+    }
 
-//    def assign(role: Int) = AssigningRole(role)
+    private val roleConverter: Role => JValue = (role) => ("role" -> role.role.toJsonValue)
+
+    def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) =
+      snapshot.table(":acl")(roleConverter).insert(roleRecord)
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {
