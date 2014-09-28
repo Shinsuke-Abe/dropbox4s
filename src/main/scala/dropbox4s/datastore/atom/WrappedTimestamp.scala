@@ -1,5 +1,8 @@
 package dropbox4s.datastore.atom
 
+import org.json4s.JsonDSL._
+import org.json4s.JsonAST.JValue
+
 /**
  * This class is special field type of record.
  *
@@ -7,4 +10,6 @@ package dropbox4s.datastore.atom
  *
  * @author mao.instantlife at gmail.com
  */
-case class WrappedTimestamp(T: String)
+case class WrappedTimestamp(T: String) {
+  def toJsonValue: JValue = ("T" -> T)
+}

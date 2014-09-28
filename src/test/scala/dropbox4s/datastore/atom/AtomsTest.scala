@@ -14,6 +14,11 @@ import org.specs2.mutable._
 class AtomsTest extends Specification {
   import dropbox4s.datastore.atom.AtomsConverter._
 
+  def assertJValueWrappedIntConversion(actual: JValue, expected: JValue) = {
+    // for test implicit conversion
+    actual must equalTo(expected)
+  }
+
   "WrappedInt" should {
     "convert type to Int with converter" in {
       assertIntConversion(WrappedInt("3456"), 3456)
@@ -49,11 +54,6 @@ class AtomsTest extends Specification {
     "convert to JValue with toJsonValue" in {
       assertJValueWrappedIntConversion(WrappedInt("9987").toJValue ,("I" -> "9987"))
     }
-
-    def assertJValueWrappedIntConversion(actual: JValue, expected: JValue) = {
-      // for test implicit conversion
-      actual must equalTo(expected)
-    }
   }
 
   "WrappedTimestamp" should {
@@ -86,6 +86,10 @@ class AtomsTest extends Specification {
     def assertWrappedTimestampConversion(actual: WrappedTimestamp, expected: WrappedTimestamp) = {
       // for test implicit conversion
       actual must equalTo(expected)
+    }
+
+    "convert to JValue with toJsonValue" in {
+      assertJValueWrappedIntConversion(WrappedTimestamp("9999").toJsonValue, ("T" -> "9999"))
     }
   }
 
