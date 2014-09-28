@@ -79,19 +79,44 @@ object DatastoresApi {
      */
     def snapshot(implicit auth: DbxAuthFinish) = Snapshot(ds.handle, GetSnapshotRequestor.request(auth, ds.handle))
 
+    /**
+     * is shareable datastore.
+     * this check use 'role' field of datastore respose.
+     * if shareable datastore, has 'role' field.
+     *
+     * @return true is shareable datastore / false is private datastore
+     */
     def isShareable =
       if(ds.role.isDefined) true
       else false
 
-    def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = snapshot.table(":acl")(roleConverter).get(principle.name) match {
+    private val roleConverter: Role => JValue = (role) => ("role" -> role.role.toJsonValue)
+
+    private def accessControlTable(implicit auth:DbxAuthFinish) = snapshot.table(":acl")(roleConverter)
+
+    /**
+     * get assigned role to principle.
+     * if this method call for private datastore, throw the DropboxException.
+     *
+     * @param principle for check principle
+     * @param auth authenticate finish class has access token
+     * @return assined role, has no role record return None
+     */
+    def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = accessControlTable.get(principle.name) match {
       case Some(roleRecord) => Some(roleRecord.data)
       case None => None
     }
 
-    private val roleConverter: Role => JValue = (role) => ("role" -> role.role.toJsonValue)
-
+    /**
+     * assign role for principle.
+     * if this method call for private datastore, throw the DropboxException.
+     *
+     * @param roleRecord assign role record.
+     * @param auth authenticate finish class has access token
+     * @return insert datastore's record
+     */
     def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) =
-      snapshot.table(":acl")(roleConverter).insert(roleRecord)
+      accessControlTable.insert(roleRecord)
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {
