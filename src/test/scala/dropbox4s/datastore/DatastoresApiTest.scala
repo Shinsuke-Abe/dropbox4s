@@ -197,9 +197,7 @@ class DatastoresApiTest extends Specification {
 
         assertRole(createdDs.role, Owner.role)
 
-        val getFromApi = get(shareableDatastoreId)
-
-        getFromApi.handle must equalTo(createdDs.handle)
+        get(shareableDatastoreId).handle must equalTo(createdDs.handle)
       }
     }
 
