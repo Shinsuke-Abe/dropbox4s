@@ -247,7 +247,6 @@ class DatastoresApiTest extends Specification {
     }
   }
   // TODO shareable datastore
-  // TODO remove role from principle
   // TODO check role for insert, update, delete data
   // TODO get shareable datastore snapshot
 
