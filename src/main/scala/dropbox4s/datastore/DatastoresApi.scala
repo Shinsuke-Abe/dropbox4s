@@ -120,7 +120,7 @@ object DatastoresApi {
      *
      * @param roleRecord assign role record.
      * @param auth authenticate finish class has access token
-     * @return insert datastore's record
+     * @return api return value for insert datastore's record
      */
     def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) = {
       if(!isShareable) throw DropboxException(invalidAccessibleMethodMessage)
@@ -133,6 +133,14 @@ object DatastoresApi {
       }
     }
 
+    /**
+     * remove role from principle.
+     * this method remove :acl record has key princple name.
+     *
+     * @param principle for remove principle
+     * @param auth authenticate finish class has access token
+     * @return api return value for delete datastore's record
+     */
     def withdrawRole(principle: Principle)(implicit auth:DbxAuthFinish) = {
       if(!isShareable) throw DropboxException(invalidAccessibleMethodMessage)
 
