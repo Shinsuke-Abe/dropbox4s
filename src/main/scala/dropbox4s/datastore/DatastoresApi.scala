@@ -16,6 +16,7 @@ package dropbox4s.datastore
  * limitations under the License.
  */
 
+import dropbox4s.commons.DropboxException
 import dropbox4s.datastore.acl.{Role, AssigningRole, Principle}
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.internal.jsonresponse._
@@ -102,9 +103,13 @@ object DatastoresApi {
      * @param auth authenticate finish class has access token
      * @return assined role, has no role record return None
      */
-    def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = accessControlTable.get(principle.name) match {
-      case Some(roleRecord) => Some(roleRecord.data)
-      case None => None
+    def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = {
+      if(!isShareable) throw new DropboxException("This datastore is not shareable.")
+
+      accessControlTable.get(principle.name) match {
+        case Some(roleRecord) => Some(roleRecord.data)
+        case None => None
+      }
     }
 
     /**

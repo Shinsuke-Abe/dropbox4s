@@ -51,6 +51,8 @@ class DatastoresApiTest extends Specification {
       createdDs.dsid must equalTo(s"$testDsName")
       createdDs.isShareable must beFalse
 
+      createdDs.assignedRole(Public) must throwA[DropboxException](message = "This datastore is not shareable.")
+
       val dsList = listDatastores
       dsList.exists(_.dsid == testDsName) must beTrue
 
