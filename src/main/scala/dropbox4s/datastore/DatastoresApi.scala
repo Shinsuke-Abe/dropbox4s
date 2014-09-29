@@ -95,6 +95,8 @@ object DatastoresApi {
 
     private def accessControlTable(implicit auth:DbxAuthFinish) = snapshot.table(":acl")(roleConverter)
 
+    private val invalidAccessibleMethodMessage = "This datastore is not shareable."
+
     /**
      * get assigned role to principle.
      * if this method call for private datastore, throw the DropboxException.
@@ -104,7 +106,7 @@ object DatastoresApi {
      * @return assined role, has no role record return None
      */
     def assignedRole(principle: Principle)(implicit auth:DbxAuthFinish): Option[Role] = {
-      if(!isShareable) throw new DropboxException("This datastore is not shareable.")
+      if(!isShareable) throw DropboxException(invalidAccessibleMethodMessage)
 
       accessControlTable.get(principle.name) match {
         case Some(roleRecord) => Some(roleRecord.data)
@@ -121,6 +123,8 @@ object DatastoresApi {
      * @return insert datastore's record
      */
     def assign(roleRecord: TableRow[Role])(implicit auth:DbxAuthFinish) = {
+      if(!isShareable) throw DropboxException(invalidAccessibleMethodMessage)
+
       val acl = accessControlTable
 
       acl.get(roleRecord.rowid) match {
@@ -129,8 +133,11 @@ object DatastoresApi {
       }
     }
 
-    def withdrawRole(principle: Principle)(implicit auth:DbxAuthFinish) =
+    def withdrawRole(principle: Principle)(implicit auth:DbxAuthFinish) = {
+      if(!isShareable) throw DropboxException(invalidAccessibleMethodMessage)
+
       accessControlTable.delete(principle.name)
+    }
   }
 
   implicit class RichListDatastores(val listDs: ListDatastoresResult) {
