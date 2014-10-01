@@ -14,10 +14,16 @@ class JsonConversionTest extends Specification {
   implicit val format = DefaultFormats
 
   "get_or_create_result" should {
-    "json convert to GetOrCreateResult" in {
+    "json that has not role convert to GetOrCreateResult" in {
       val testResult = parse("""{"handle": "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", "rev": 0, "created": true}""")
 
       testResult.extract[GetOrCreateDatastoreResult] must equalTo(GetOrCreateDatastoreResult("1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, true, None))
+    }
+
+    "json that has role convert to GetOrCreateResult" in {
+      val testResult = parse("""{"handle": "1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", "rev": 0, "created": true, "role": 3000}""")
+
+      testResult.extract[GetOrCreateDatastoreResult] must equalTo(GetOrCreateDatastoreResult("1PuUJ3DvMI71OYx1gcqWHzzdva2EpF", 0, true, Some(3000)))
     }
   }
 
@@ -83,7 +89,7 @@ class JsonConversionTest extends Specification {
   }
 
   "get_snapshot_result" should {
-    "json convert to SnapshotResult with raw json result on data" in {
+    "json that has not role convert to SnapshotResult with raw json result on data" in {
       val testResult = parse(
         """
           | {
@@ -100,7 +106,28 @@ class JsonConversionTest extends Specification {
       testResult.extract[SnapshotResult] must equalTo(
         SnapshotResult(
           List(Row("default", "1", data1), Row("default", "2", data2)),
-          0))
+          0, None))
+    }
+
+    "json that has role convert to SnapshotResult with raw json result on data" in {
+      val testResult = parse(
+        """
+          | {
+          |   "rev": 0,
+          |   "rows": [
+          |     {"tid": "default", "rowid": "1", "data": {"test": "testvalue1"}},
+          |     {"tid": "default", "rowid": "2", "data": {"test": "testvalue2"}}
+          |   ],
+          |   "role": 2000
+          | }
+          | """.stripMargin)
+      val data1 = parse("""{"test": "testvalue1"}""")
+      val data2 = parse("""{"test": "testvalue2"}""")
+
+      testResult.extract[SnapshotResult] must equalTo(
+        SnapshotResult(
+          List(Row("default", "1", data1), Row("default", "2", data2)),
+          0, Some(2000)))
     }
   }
 }
