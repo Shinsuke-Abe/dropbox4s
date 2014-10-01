@@ -244,8 +244,11 @@ object DatastoresApi {
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) =
+    def update(set: (T) => T)(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) = {
+      checkRole
+
       putDeltaRequest(table.select(where).map(row => rowUpdateOps(row.rowid, set(row.data))).flatten.toList, auth)
+    }
   }
 
   val nullGetOrCreateDsResult = GetOrCreateDatastoreResult(null, 0, false, None)
