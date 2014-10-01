@@ -186,8 +186,13 @@ object DatastoresApi {
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def delete(rowids: String*)(implicit auth: DbxAuthFinish) =
+    def delete(rowids: String*)(implicit auth: DbxAuthFinish) = {
+      if(table.role.isDefined && table.role.get < Editor.role.I.toInt) {
+        throw DropboxException("This datastore is shareable. You don't have permission. Check your role.")
+      }
+
       putDeltaRequest(rowids.distinct.toList.map(DataDelete(table.tid, _)), auth)
+    }
 
     /**
      * delete rows from datastore by condition.
