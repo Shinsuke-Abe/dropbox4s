@@ -159,6 +159,10 @@ object DatastoresApi {
     private def rowUpdateOps(rowid: String, other: T) =
       table.rowDiff(rowid, other).map(DataUpdate(table.tid, rowid, _))
 
+    private def checkRole =
+      if(table.role.isDefined && table.role.get < Editor.role.I.toInt)
+        throw DropboxException("This datastore is shareable. You don't have permission. Check your role.")
+
     /**
      * insert table rows to datastore.
      * Note: if row id of parameter is conflict, throw IllegalArgumentException.
@@ -170,10 +174,7 @@ object DatastoresApi {
      */
     def insert(rows: TableRow[T]*)(implicit auth: DbxAuthFinish) = {
       require(rows.size == rows.toList.map(_.rowid).distinct.size)
-
-      if(table.role.isDefined && table.role.get < Editor.role.I.toInt) {
-        throw DropboxException("This datastore is shareable. You don't have permission. Check your role.")
-      }
+      checkRole
 
       putDeltaRequest(rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data))), auth)
     }
@@ -181,15 +182,14 @@ object DatastoresApi {
     /**
      * delete rows from datastore.
      * Note: if rowid of parameter is conflict, distinct array before execute.
+     * Note: if user do not have role for data edit, throw DropboxException.
      *
      * @param rowids (variable parameter) row id array to delete.
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
     def delete(rowids: String*)(implicit auth: DbxAuthFinish) = {
-      if(table.role.isDefined && table.role.get < Editor.role.I.toInt) {
-        throw DropboxException("This datastore is shareable. You don't have permission. Check your role.")
-      }
+      checkRole
 
       putDeltaRequest(rowids.distinct.toList.map(DataDelete(table.tid, _)), auth)
     }
