@@ -223,13 +223,18 @@ object DatastoresApi {
 
     /**
      * update row by rowid
+     * Note: if user do not have role for data edit, throw DropboxException.
+     *
      * @param rowid rowid to update
      * @param other update row data
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def update(rowid: String, other: T)(implicit auth: DbxAuthFinish) =
+    def update(rowid: String, other: T)(implicit auth: DbxAuthFinish) = {
+      checkRole
+
       putDeltaRequest(rowUpdateOps(rowid, other), auth)
+    }
 
     /**
      * update rows by condition.
