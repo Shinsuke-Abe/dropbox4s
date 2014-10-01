@@ -28,7 +28,7 @@ class TableTest extends Specification {
     TableRow("row-id-3", TestValue("value1-3", 2, Some(List("value3-3-1", "value3-3-2")), None))
   )
 
-  val testTable = Table("test-handle", "test-table", 0, converter, testTableRows)
+  val testTable = Table("test-handle", Some(3000), "test-table", 0, converter, testTableRows)
 
   // has wrapped atom values
   case class TestRowHasAtom(key1: WrappedInt, key2: WrappedBytes, key3: WrappedTimestamp, key4: List[WrappedInt])
@@ -47,7 +47,7 @@ class TableTest extends Specification {
       TestRowHasAtom(3000, Array[Byte](333.toByte, 343.toByte), new Timestamp(3333L), List(300, 400)))
   )
 
-  val testTAbleHasAtom = Table("test-handle", "test-table-has-value", 0, converterHasAtom, testTableRowsHasAtom)
+  val testTAbleHasAtom = Table("test-handle", Some(2000), "test-table-has-value", 0, converterHasAtom, testTableRowsHasAtom)
 
   // deltas
   private def putDelta(key: String, value: JValue) =

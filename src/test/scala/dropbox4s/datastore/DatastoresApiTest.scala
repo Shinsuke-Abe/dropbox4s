@@ -285,7 +285,7 @@ class DatastoresApiTest extends Specification {
 
   "insert" should {
     "throw exception not found datastore handle" in {
-      val notFoundTable = Table[TestDummyData]("handlenotfound", "not-found-table", 0, dummyJsonConverter, List.empty)
+      val notFoundTable = Table[TestDummyData]("handlenotfound", None, "not-found-table", 0, dummyJsonConverter, List.empty)
       notFoundTable.insert(insertRow) must throwA[DropboxException](message = messageNotFound)
     }
   }

@@ -22,7 +22,7 @@ import dropbox4s.commons.DropboxException
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
+case class Table[T](handle: String, role: Option[Int], tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
   val getKey: (String, JValue) => String = (key, _) => key
 
   def get(rowid: String) = rows.find(_.rowid == rowid)
