@@ -196,13 +196,17 @@ object DatastoresApi {
 
     /**
      * delete rows from datastore by condition.
+     * Note: if user do not have role for data edit, throw DropboxException.
      *
      * @param where delete condition
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def delete(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) =
+    def delete(where: (TableRow[T]) => Boolean)(implicit auth: DbxAuthFinish) = {
+      checkRole
+
       putDeltaRequest(table.select(where).map(row => DataDelete(table.tid, row.rowid)), auth)
+    }
 
     /**
      * delete all rows of table.
