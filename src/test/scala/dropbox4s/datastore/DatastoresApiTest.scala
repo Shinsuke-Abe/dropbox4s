@@ -9,9 +9,8 @@ import java.util.Date
 import dropbox4s.commons.DropboxException
 import dropbox4s.datastore.acl._
 import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
-import dropbox4s.datastore.internal.requestparameter.{PutDeltaParameter, CreateDatastoreParameter}
+import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
 import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
-import org.json4s.JValue
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s._

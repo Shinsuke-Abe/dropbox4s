@@ -17,7 +17,7 @@ package dropbox4s.datastore
  */
 
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.acl.{Role, AssigningRole, Principle}
+import dropbox4s.datastore.acl.{Editor, Role, AssigningRole, Principle}
 import dropbox4s.datastore.internal.http._
 import dropbox4s.datastore.internal.jsonresponse._
 import org.json4s.JsonDSL._
@@ -162,6 +162,7 @@ object DatastoresApi {
     /**
      * insert table rows to datastore.
      * Note: if row id of parameter is conflict, throw IllegalArgumentException.
+     * Note: if user do not have role for data edit, throw DropboxException.
      *
      * @param rows (variable parameter) rows array to insert.
      * @param auth authenticate finish class has access token
@@ -169,6 +170,10 @@ object DatastoresApi {
      */
     def insert(rows: TableRow[T]*)(implicit auth: DbxAuthFinish) = {
       require(rows.size == rows.toList.map(_.rowid).distinct.size)
+
+      if(table.role.isDefined && table.role.get < Editor.role.I.toInt) {
+        throw DropboxException("This datastore is shareable. You don't have permission. Check your role.")
+      }
 
       putDeltaRequest(rows.toList.map(row => DataInsert(table.tid, row.rowid, table.converter(row.data))), auth)
     }
