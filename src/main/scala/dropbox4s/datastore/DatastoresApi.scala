@@ -210,12 +210,16 @@ object DatastoresApi {
 
     /**
      * delete all rows of table.
+     * Note: if user do not have role for data edit, throw DropboxException.
      *
      * @param auth authenticate finish class has access token
      * @return put_delta result
      */
-    def truncate(implicit auth: DbxAuthFinish) =
+    def truncate(implicit auth: DbxAuthFinish) = {
+      checkRole
+
       putDeltaRequest(table.rows.map(row => DataDelete(table.tid, row.rowid)), auth)
+    }
 
     /**
      * update row by rowid
