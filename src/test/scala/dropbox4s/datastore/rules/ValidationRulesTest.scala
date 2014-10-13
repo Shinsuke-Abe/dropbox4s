@@ -5,6 +5,7 @@ package dropbox4s.datastore.rules
  */
 
 import dropbox4s.commons.DropboxException
+import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
 import org.apache.commons.codec.binary.Base64
 import org.specs2.mutable._
 
@@ -103,6 +104,15 @@ class ValidationRulesTest extends Specification {
     "validation string is invalid" in {
       (Validator("invalid target") by RegexNamingRule("""^valid .*""")) must
         throwA[DropboxException](message = "This string is not match naming rule.")
+    }
+  }
+
+  "shareable dsid rule" in {
+    "validation dsid is valid" in {
+      val targetId = CreateDatastoreParameter("target_datastore").dsid
+      println(targetId)
+
+      (Validator(targetId) by ShareableDsidRule) must equalTo(targetId)
     }
   }
 

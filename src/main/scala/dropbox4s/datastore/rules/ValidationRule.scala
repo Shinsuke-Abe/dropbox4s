@@ -2,6 +2,7 @@ package dropbox4s.datastore.rules
 
 import dropbox4s.commons.DropboxException
 import org.apache.commons.codec.binary.Base64
+import scala.util.control.Exception._
 
 /**
  * @author mao.instantlife at gmail.com
@@ -48,4 +49,23 @@ case class RegexNamingRule(namingRule: String) extends ValidationRule[String] {
     if(target.matches(namingRule)) target
     else throw DropboxException(s"This string is not match naming rule. naming rule=${namingRule}, strnig=${target}")
   }
+}
+
+/**
+ * shareable dsid validation rule
+ * - starts with '.'
+ * - and less then or equal to to 64
+ * - and url-safe base64
+ */
+object ShareableDsidRule extends ValidationRule[String] {
+  val stringStructureRule = RegexNamingRule("""^\..*""") << LessThanOrEqualToRule(64)
+
+  override val check: (String) => String = (target) =>
+    allCatch either stringStructureRule.check(target) match {
+      case Left(e) => throw e
+      case Right(_) => allCatch either UrlsafeBase64Rule.check(target.substring(1)) match {
+        case Left(e) => throw e
+        case Right(_) => target
+      }
+    }
 }
