@@ -79,7 +79,23 @@ class ValidationRulesTest extends Specification {
     }
   }
 
-  // TODO string is not reserved word
+  "NotReservedWordRule" in {
+    "validation string is valid" in {
+      (Validator("target") by NotReservedWordRule) must equalTo("target")
+    }
+
+    "validation string is invalid, because string':info' is reserved" in {
+      (Validator(":info") by NotReservedWordRule) must
+        throwA[DropboxException](message = "This string is reserved by dropbox datastore api.")
+    }
+
+    "validation string is invalid, because string':acl' is reserved" in {
+      (Validator(":acl") by NotReservedWordRule) must
+        throwA[DropboxException](message = "This string is reserved by dropbox datastore api.")
+    }
+  }
+
+  // TODO string matches regex rule(for naming rule)
   // TODO dsid validation rule(less then or equal to 64, and only available characters, and naming rule)
   // TODO shareable dsid validation rule(less then or equal to to 64, and url-safe base64, and naming rule)
   // TODO handle validation rule(less then or equal to 1000, and url-safe base64)

@@ -33,3 +33,12 @@ case class LessThanOrEqualToRule(length: Int) extends ValidationRule[String] {
     else throw DropboxException(s"Length of string is not less then or equal to ${length}. string=${target}")
   }
 }
+
+object NotReservedWordRule extends ValidationRule[String] {
+  val reservedNames = List(":acl", ":info")
+
+  override val check: (String) => String = (target) => {
+    if(reservedNames.exists(_ == target)) throw DropboxException(s"This string is reserved by dropbox datastore api. strnig=${target}")
+    else target
+  }
+}
