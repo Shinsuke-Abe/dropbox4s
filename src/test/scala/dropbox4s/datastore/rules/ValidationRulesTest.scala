@@ -141,6 +141,4 @@ class ValidationRulesTest extends Specification {
       (Validator("Test123.4-for_rule+id/valid=id") by DataIdentifyValueRule) must equalTo("Test123.4-for_rule+id/valid=id")
     }
   }
-
-  // TODO tid or recordid or fieldname validation rule(less then or equal to 64, and available characters, and naming rule)
 }
