@@ -110,14 +110,26 @@ class ValidationRulesTest extends Specification {
   "shareable dsid rule" in {
     "validation dsid is valid" in {
       val targetId = CreateDatastoreParameter("target_datastore").dsid
-      println(targetId)
 
       (Validator(targetId) by ShareableDsidRule) must equalTo(targetId)
     }
   }
 
-  // TODO dsid validation rule(less then or equal to 64, and only available characters, and naming rule)
-  // TODO shareable dsid validation rule(less then or equal to to 64, and url-safe base64, and naming rule)
-  // TODO handle validation rule(less then or equal to 1000, and url-safe base64)
+  "local dsid rule" in {
+    "validation dsid is invalid, because starts with dot" in {
+      (Validator(".testid") by LocalDsidRule) must
+        throwA[DropboxException](message = "This string is not match naming rule.")
+    }
+
+    "validation dsid is invalid, because ends with dot" in {
+      (Validator("test-dsid.") by LocalDsidRule) must
+        throwA[DropboxException](message = "This string is not match naming rule.")
+    }
+
+    "validation dsid is valid" in {
+      (Validator("test123.4-for_rule") by LocalDsidRule) must equalTo("test123.4-for_rule")
+    }
+  }
+
   // TODO tid or recordid or fieldname validation rule(less then or equal to 64, and available characters, and naming rule)
 }
