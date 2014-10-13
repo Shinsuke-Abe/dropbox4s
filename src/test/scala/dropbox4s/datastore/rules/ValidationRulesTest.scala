@@ -22,7 +22,8 @@ class ValidationRulesTest extends Specification {
     }
 
     "validate value by simple rule, is invalid" in {
-      (Validator("hi") by stringRuleLengthOverThree) must throwA[DropboxException](message = "hi has not over three characters.")
+      (Validator("hi") by stringRuleLengthOverThree) must
+        throwA[DropboxException](message = "hi has not over three characters.")
     }
 
     val stringRuleIncludeWordTarget = new ValidationRule[String] {
@@ -46,23 +47,38 @@ class ValidationRulesTest extends Specification {
     "validate string is valid" in {
       val target = Base64.encodeBase64URLSafeString("target string".getBytes)
 
-      (Validator(target) by (UrlsafeBase64Rule)) must equalTo(target)
+      (Validator(target) by UrlsafeBase64Rule) must equalTo(target)
     }
 
     "validation string is invalid, because not url-safe" in {
       val invalidTarget = Base64.encodeBase64String("target string".getBytes)
 
-      (Validator(invalidTarget) by (UrlsafeBase64Rule)) must
-        throwA[DropboxException](message = s"This string is not url-safe Base64 encoding. string=${invalidTarget}")
+      (Validator(invalidTarget) by UrlsafeBase64Rule) must
+        throwA[DropboxException](message = s"This string is not url-safe Base64 encoding.")
     }
 
     "validation string is invalid, because not base64 string" in {
-      (Validator("target string!") by (UrlsafeBase64Rule)) must
-        throwA[DropboxException](message = "This string is not url-safe Base64 encoding. string=target string!")
+      (Validator("target string!") by UrlsafeBase64Rule) must
+        throwA[DropboxException](message = "This string is not url-safe Base64 encoding.")
     }
   }
 
-  // TODO length of string is less then or equal to defined number.
+  "LessThenOrEqualToRule" in {
+    "validation string is valid" in {
+      (Validator("target") by LessThanOrEqualToRule(10)) must equalTo("target")
+    }
+
+    "validation string is invalid, because empty string" in {
+      (Validator("") by LessThanOrEqualToRule(10)) must
+        throwA[DropboxException](message = "Length of string is not less then or equal to")
+    }
+
+    "validation string is invalid, because length of string over rule" in {
+      (Validator("invalid target") by LessThanOrEqualToRule(10)) must
+        throwA[DropboxException](message = "Length of string is not less then or equal to")
+    }
+  }
+
   // TODO string is not reserved word
   // TODO dsid validation rule(less then or equal to 64, and only available characters, and naming rule)
   // TODO shareable dsid validation rule(less then or equal to to 64, and url-safe base64, and naming rule)

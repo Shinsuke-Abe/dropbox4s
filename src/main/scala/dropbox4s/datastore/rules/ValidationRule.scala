@@ -21,8 +21,15 @@ trait ValidationRule[T] {
 object UrlsafeBase64Rule extends ValidationRule[String] {
   val reg = """[\+/=]""".r
 
-  override val check:(String) => String = (target: String) => {
+  override val check:(String) => String = (target) => {
     if(Base64.isBase64(target) && reg.findAllMatchIn(target).isEmpty) target
     else throw DropboxException(s"This string is not url-safe Base64 encoding. string=${target}")
+  }
+}
+
+case class LessThanOrEqualToRule(length: Int) extends ValidationRule[String] {
+  override val check: (String) => String = (target) => {
+    if(!target.isEmpty && target.length <= length) target
+    else throw DropboxException(s"Length of string is not less then or equal to ${length}. string=${target}")
   }
 }
