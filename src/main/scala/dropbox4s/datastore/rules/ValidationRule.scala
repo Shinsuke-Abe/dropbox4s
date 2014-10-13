@@ -42,3 +42,10 @@ object NotReservedWordRule extends ValidationRule[String] {
     else target
   }
 }
+
+case class RegexNamingRule(namingRule: String) extends ValidationRule[String] {
+  override val check: (String) => String = (target) => {
+    if(target.matches(namingRule)) target
+    else throw DropboxException(s"This string is not match naming rule. naming rule=${namingRule}, strnig=${target}")
+  }
+}
