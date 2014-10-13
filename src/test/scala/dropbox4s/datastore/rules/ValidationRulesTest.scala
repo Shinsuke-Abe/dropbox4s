@@ -47,9 +47,15 @@ class ValidationRulesTest extends Specification {
       val target = Base64.encodeBase64URLSafeString("target string".getBytes)
       (Validator(target) by (UrlsafeBase64Rule)) must equalTo(target)
     }
+
+    "validation string in invalid" in {
+      val invalidTarget = Base64.encodeBase64String("target string".getBytes)
+      println(invalidTarget)
+      (Validator(invalidTarget) by (UrlsafeBase64Rule)) must
+        throwA[DropboxException](message = s"This string is not url-safe Base64 encoding. string=${invalidTarget}")
+    }
   }
 
-  // TODO string is url-safe base64
   // TODO length of string is less then or equal to defined number.
   // TODO string is not reserved word
   // TODO dsid validation rule(less then or equal to 64, and only available characters, and naming rule)
