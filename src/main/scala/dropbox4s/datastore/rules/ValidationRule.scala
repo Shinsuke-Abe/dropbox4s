@@ -35,15 +35,6 @@ case class LessThanOrEqualToRule(length: Int) extends ValidationRule[String] {
   }
 }
 
-object NotReservedWordRule extends ValidationRule[String] {
-  val reservedNames = List(":acl", ":info")
-
-  override val check: (String) => String = (target) => {
-    if(reservedNames.exists(_ == target)) throw DropboxException(s"This string is reserved by dropbox datastore api. strnig=${target}")
-    else target
-  }
-}
-
 case class RegexNamingRule(namingRule: String) extends ValidationRule[String] {
   override val check: (String) => String = (target) => {
     if(target.matches(namingRule)) target

@@ -80,22 +80,6 @@ class ValidationRulesTest extends Specification {
     }
   }
 
-  "NotReservedWordRule" in {
-    "validation string is valid" in {
-      (Validator("target") by NotReservedWordRule) must equalTo("target")
-    }
-
-    "validation string is invalid, because string':info' is reserved" in {
-      (Validator(":info") by NotReservedWordRule) must
-        throwA[DropboxException](message = "This string is reserved by dropbox datastore api.")
-    }
-
-    "validation string is invalid, because string':acl' is reserved" in {
-      (Validator(":acl") by NotReservedWordRule) must
-        throwA[DropboxException](message = "This string is reserved by dropbox datastore api.")
-    }
-  }
-
   "RegexNamingRule" in {
     "validation string is valid" in {
       (Validator("valid target") by RegexNamingRule("""^valid .*""")) must equalTo("valid target")
