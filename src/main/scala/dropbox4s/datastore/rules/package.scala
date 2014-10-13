@@ -14,4 +14,11 @@ package object rules {
   // - and lowercase letters or digit or '.', '-', '_'
   val LocalDsidRule = RegexNamingRule("""^[^\.].*""") << RegexNamingRule(""".*[^\.]$""") <<
     LessThanOrEqualToRule(64) << RegexNamingRule("""([a-z0-9_\.-])*""")
+
+  // table id, record id, field name validation rule
+  // - not start with ':'
+  // - and less than or equal to 64
+  // - and lower and upper case letters or digit or '.', '-', '_', '/', '+', '='
+  val DataIdentifyValueRule = RegexNamingRule("""([a-zA-Z0-9_\.\+-/=])*""") <<
+    RegexNamingRule("""^[^:].*""") << LessThanOrEqualToRule(64)
 }

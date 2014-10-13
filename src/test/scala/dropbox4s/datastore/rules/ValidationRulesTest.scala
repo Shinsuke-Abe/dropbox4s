@@ -131,5 +131,16 @@ class ValidationRulesTest extends Specification {
     }
   }
 
+  "data identify value rule" in {
+    "validation value is invalid, because starts with colon" in {
+      (Validator(":testid") by DataIdentifyValueRule) must
+        throwA[DropboxException](message = "This string is not match naming rule.")
+    }
+
+    "validation value is valid" in {
+      (Validator("Test123.4-for_rule+id/valid=id") by DataIdentifyValueRule) must equalTo("Test123.4-for_rule+id/valid=id")
+    }
+  }
+
   // TODO tid or recordid or fieldname validation rule(less then or equal to 64, and available characters, and naming rule)
 }
