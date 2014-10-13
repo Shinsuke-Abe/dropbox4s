@@ -14,3 +14,9 @@ trait ValidationRule[T] {
     }
   }
 }
+
+object UrlsafeBase64Rule extends ValidationRule[String] {
+  override val check = (target: String) => {
+    target
+  }
+}

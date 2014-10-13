@@ -5,6 +5,7 @@ package dropbox4s.datastore.rules
  */
 
 import dropbox4s.commons.DropboxException
+import org.apache.commons.codec.binary.Base64
 import org.specs2.mutable._
 
 class ValidationRulesTest extends Specification {
@@ -35,14 +36,24 @@ class ValidationRulesTest extends Specification {
         equalTo("target string")
     }
 
-    "composit rules, is invalid" in {
+    "composite rules, is invalid" in {
       (Validator("new string") by (stringRuleLengthOverThree << stringRuleIncludeWordTarget)) must
         throwA[DropboxException](message = "new string has not word 'target'.")
     }
   }
 
-  // TODO dsid validation rule
-  // TODO shareable dsid validation rule
-  // TODO handle validation rule
-  // TODO recordid or fieldname validation rule
+  "UrlsafeBase64Rule" in {
+    "validate string in valid" in {
+      val target = Base64.encodeBase64URLSafeString("target string".getBytes)
+      (Validator(target) by (UrlsafeBase64Rule)) must equalTo(target)
+    }
+  }
+
+  // TODO string is url-safe base64
+  // TODO length of string is less then or equal to defined number.
+  // TODO string is not reserved word
+  // TODO dsid validation rule(less then or equal to 64, and only available characters, and naming rule)
+  // TODO shareable dsid validation rule(less then or equal to to 64, and url-safe base64, and naming rule)
+  // TODO handle validation rule(less then or equal to 1000, and url-safe base64)
+  // TODO tid or recordid or fieldname validation rule(less then or equal to 64, and available characters, and naming rule)
 }
