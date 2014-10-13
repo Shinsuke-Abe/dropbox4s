@@ -43,16 +43,22 @@ class ValidationRulesTest extends Specification {
   }
 
   "UrlsafeBase64Rule" in {
-    "validate string in valid" in {
+    "validate string is valid" in {
       val target = Base64.encodeBase64URLSafeString("target string".getBytes)
+
       (Validator(target) by (UrlsafeBase64Rule)) must equalTo(target)
     }
 
-    "validation string in invalid" in {
+    "validation string is invalid, because not url-safe" in {
       val invalidTarget = Base64.encodeBase64String("target string".getBytes)
-      println(invalidTarget)
+
       (Validator(invalidTarget) by (UrlsafeBase64Rule)) must
         throwA[DropboxException](message = s"This string is not url-safe Base64 encoding. string=${invalidTarget}")
+    }
+
+    "validation string is invalid, because not base64 string" in {
+      (Validator("target string!") by (UrlsafeBase64Rule)) must
+        throwA[DropboxException](message = "This string is not url-safe Base64 encoding. string=target string!")
     }
   }
 
