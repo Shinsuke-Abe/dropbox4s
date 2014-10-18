@@ -134,6 +134,8 @@ class DatastoresApiTest extends Specification {
 
     testTable.rows must have size(6)
 
+    testTable.select(row => row.data.price >= 500) must have size(2)
+
     // update multi row
     testTable.update(data => data.copy(price = data.price - 100)){ row => (row.data.price >= 500) }
 
@@ -245,9 +247,6 @@ class DatastoresApiTest extends Specification {
       createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
     }
   }
-  // TODO shareable datastore
-  // TODO check role for insert, update, delete data
-  // TODO get shareable datastore snapshot
 
   "snapshot" should {
     "throw exception not found datastore handle" in {
