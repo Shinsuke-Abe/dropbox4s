@@ -20,6 +20,12 @@ class CoreApiTest extends Specification with CoreApi {
   val createFile = new java.io.File(this.getClass.getResource("/testfiles/forupload.txt").toURI)
   val rewriteFile = new java.io.File(this.getClass.getResource("/testfiles/forupdate.txt").toURI)
 
+  "clientIdentifier" should {
+    "has dropbox4s version" in {
+      clientIdentifier must equalTo("TestAppForLibrary/1.0 dropbox4s/0.2.0")
+    }
+  }
+
   "accountInfo" should {
     "call DbxClient.getAccountInfo" in {
       accountInfo.userId must equalTo(testUser1Id)
