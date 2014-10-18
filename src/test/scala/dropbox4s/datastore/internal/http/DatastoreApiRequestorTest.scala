@@ -4,14 +4,14 @@ package dropbox4s.datastore.internal.http
  * @author mao.instantlife at gmail.com
  */
 
-import org.specs2.mutable._
-import scala.concurrent.ExecutionException
-import org.json4s._
-import org.json4s.JsonDSL._
-import dropbox4s.datastore.TestDummyData
-import dispatch.Req
-import dropbox4s.datastore.internal.requestparameter.{CreateDatastoreParameter, ListAwaitParameter, DataInsert, PutDeltaParameter}
 import com.dropbox.core.DbxAuthFinish
+import dispatch.{Req, StatusCode}
+import dropbox4s.commons.DropboxException
+import dropbox4s.datastore.TestDummyData
+import dropbox4s.datastore.internal.requestparameter.{CreateDatastoreParameter, DataInsert, ListAwaitParameter, PutDeltaParameter}
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.specs2.mutable._
 
 class DatastoreApiRequestorTest extends Specification {
   val baseUrl = "https://api.dropbox.com/1/datastores"
@@ -30,7 +30,25 @@ class DatastoreApiRequestorTest extends Specification {
 
   "DatastoreApiRequestor#request" should {
     "throw exception when unauth request is failed" in {
-      GetOrCreateDatastoreRequestor.request(testAuth, "failed-request") must throwA[ExecutionException]
+      GetOrCreateDatastoreRequestor.request(testAuth, "failed-request") must
+        throwA[DropboxException](message = "un-authorized request")
+    }
+  }
+
+  "DatastoreApiRequestor#handlingResponseError" should {
+    "get DropboxException when status code is 401" in {
+      GetOrCreateDatastoreRequestor.handlingResponseError(StatusCode(401)) must
+        equalTo(DropboxException("un-authorized request"))
+    }
+
+    "get DropboxException when status code is 404" in {
+      GetOrCreateDatastoreRequestor.handlingResponseError(StatusCode(404)) must
+        equalTo(DropboxException("this endpoint is unknown 'get_or_create_datastore'"))
+    }
+
+    "get DropboxException when another error" in {
+      GetOrCreateDatastoreRequestor.handlingResponseError(new Exception("error message")) must
+        equalTo(DropboxException(s"unknown error: ${new Exception("error message").getMessage}"))
     }
   }
 

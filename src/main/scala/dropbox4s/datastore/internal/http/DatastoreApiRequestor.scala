@@ -83,12 +83,23 @@ trait DatastoreApiRequestor[ParamType, ResType] {
    * @return decide by implements Requestor
    */
   def request(auth: DbxAuthFinish, input: ParamType)(implicit m: Manifest[ResType]): ResType = {
-    val request = Http(generateReq(auth, input) OK as.String)
-    val response = parse(request())
+    val request = Http(generateReq(auth, input) OK as.String).either
+    request() match {
+      case Left(exc) => throw handlingResponseError(exc)
+      case Right(responseString) => {
+        val response = parse(responseString)
 
-    verifyResponse(response)
+        verifyResponse(response)
 
-    parseJsonToclass(response)
+        parseJsonToclass(response)
+      }
+    }
+  }
+
+  private[dropbox4s] def handlingResponseError(exc: Throwable):DropboxException = exc match {
+    case StatusCode(401) => DropboxException("un-authorized request")
+    case StatusCode(404) => DropboxException(s"this endpoint is unknown '${endpoint}'")
+    case _ => DropboxException(s"unknown error: ${exc.getMessage}")
   }
 
   /**
