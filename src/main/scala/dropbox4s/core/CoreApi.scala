@@ -116,6 +116,8 @@ trait CoreApi {
         client(auth.accessToken).getThumbnail(sizeBound, format, fileEntity.path, fileEntity.rev, stream)
       }
     }
+
+    def restore(implicit auth: DbxAuthFinish) = client(auth.accessToken).restoreFile(fileEntity.path, fileEntity.rev)
   }
 
   implicit class RichDropboxPath(val dropboxPath: DropboxPath) {

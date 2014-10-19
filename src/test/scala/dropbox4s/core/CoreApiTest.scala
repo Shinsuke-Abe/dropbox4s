@@ -53,6 +53,22 @@ class CoreApiTest extends Specification with CoreApi {
       afterTestByFile(updatedFile, uploadTestFile)
     }
 
+    "upload -> DbxEntry.File.update -> restore(uploaded revision) -> DbxEntry.File.remove cycle" in {
+      val uploadTestFile = "restore_test.txt"
+
+      val uploadedFile = createFile uploadTo uploadFilePath(uploadTestFile)
+      uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val updatedFile = uploadedFile update rewriteFile
+      updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val restoredFile = uploadedFile.restore
+      restoredFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+      restoredFile.rev must not equalTo(updatedFile.rev)
+
+      afterTestByFile(updatedFile, uploadTestFile)
+    }
+
     "upload -> DropboxPath.remove cycle" in {
       val removeTestFile = "remove_test.txt"
 
