@@ -156,6 +156,22 @@ class CoreApiTest extends Specification with CoreApi {
       verifyCopyFile(copyDestPath, copyFilename)
     }
 
+    "upload -> DropboxPath.copyRef to DropboxPath.copyFrom -> search(to) -> remove(from) -> remove(to)" in {
+      val copyFilename = "dropbox_path_copy_ref_test.txt"
+      val copyDestPath = DropboxPath("/test_copycycle") / "from_res_file.txt"
+
+      val uploadedFile = prepareCycleTest(copyFilename, uploadFilePath(copyFilename))
+
+      val newRef = uploadedFile.copyRef
+
+      copyDestPath copyFrom newRef
+
+      (search(DropboxPath("/test_copycycle"), "from_res_file.txt")) must have size(1)
+
+      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
+      afterTestByPath(copyDestPath, "from_res_file.txt")
+    }
+
     def verifyCopyFile(dest: DropboxPath, fileName: String) = {
       (search(dest, fileName)) must have size(1)
 

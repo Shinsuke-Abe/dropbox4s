@@ -22,7 +22,7 @@ import java.io.{File, FileOutputStream, FileInputStream}
 import dropbox4s.commons.DropboxException
 
 import collection.JavaConversions._
-import dropbox4s.core.model.DropboxPath
+import dropbox4s.core.model.{CopyRef, DropboxPath}
 
 /**
  * @author mao.instantlife at gmail.com
@@ -182,6 +182,25 @@ trait CoreApi {
      * @return result of DbxClient.move
      */
     def moveTo(toPath: DropboxPath)(implicit auth: DbxAuthFinish) = client(auth.accessToken).move(path, toPath.path)
+
+    /**
+     * create copy ref of receiver path.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#createCopyRef%28java.lang.String%29">SDK javadoc</a>
+     *
+     * @param auth authenticate finish class has access token
+     * @return CopyRef, case class for wrap result of DbxClient.createCopyRef
+     */
+    def copyRef(implicit auth:DbxAuthFinish) = CopyRef(client(auth.accessToken).createCopyRef(path))
+
+    /**
+     * copy file from copy ref to receiver path.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#copyFromCopyRef%28java.lang.String,%20java.lang.String%29">SDK javadoc</a>
+     *
+     * @param copyRef CopyRef, case class for wrap result of DbxClient.createCopyRef
+     * @param auth authenticate finish class has access token
+     * @return result of DbxClient.copyFromCopyRef
+     */
+    def copyFrom(copyRef: CopyRef)(implicit auth:DbxAuthFinish) = client(auth.accessToken).copyFromCopyRef(copyRef.ref, path)
 
     /**
      * create sharable url of receiver path.<br/>
