@@ -117,6 +117,13 @@ trait CoreApi {
       }
     }
 
+    /**
+     * restore file by receive file revision.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#restoreFile%28java.lang.String,%20java.lang.String%29">SDK javadoc</a>
+     *
+     * @param auth authenticate finish class has access token
+     * @return result of DbxClient.restoreFile
+     */
     def restore(implicit auth: DbxAuthFinish) = client(auth.accessToken).restoreFile(fileEntity.path, fileEntity.rev)
   }
 
