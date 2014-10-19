@@ -98,6 +98,17 @@ trait CoreApi {
       client(auth.accessToken).uploadFile(fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
     }
 
+    /**
+     * get thumbnail for file.<br/>
+     * if file don't have thumbnail, throw DropboxException.
+     * more detail, see the<a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#getThumbnail%28com.dropbox.core.DbxThumbnailSize,%20com.dropbox.core.DbxThumbnailFormat,%20java.lang.String,%20java.lang.String,%20java.io.OutputStream%29">SDK javadoc</a>
+     *
+     * @param sizeBound The returned thumbnail will never be greater than the dimensions given here.
+     * @param to local file path for download thumbnail.
+     * @param format The image format to use for thumbnail data. default is DbxThumbnailFormat.PNG.
+     * @param auth authenticate finish class has access token
+     * @return result of Dbxclient.getThumbnail
+     */
     def thumbnail(sizeBound: DbxThumbnailSize, to: String, format: DbxThumbnailFormat = DbxThumbnailFormat.PNG)(implicit auth: DbxAuthFinish) = {
       if(!fileEntity.mightHaveThumbnail) throw DropboxException(s"file have not thumbnail. file = ${fileEntity.toString}")
 
