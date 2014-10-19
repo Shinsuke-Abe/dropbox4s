@@ -19,6 +19,8 @@ package dropbox4s.core
 import com.dropbox.core._
 import java.util.Locale
 import java.io.{File, FileOutputStream, FileInputStream}
+import dropbox4s.commons.DropboxException
+
 import collection.JavaConversions._
 import dropbox4s.core.model.DropboxPath
 
@@ -94,6 +96,14 @@ trait CoreApi {
      */
     def update(newFile: File)(implicit auth: DbxAuthFinish) = asUploadFile(newFile){ (file, stream) =>
       client(auth.accessToken).uploadFile(fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
+    }
+
+    def thumbnail(sizeBound: DbxThumbnailSize, to: String, format: DbxThumbnailFormat = DbxThumbnailFormat.PNG)(implicit auth: DbxAuthFinish) = {
+      if(!fileEntity.mightHaveThumbnail) throw DropboxException(s"file have not thumbnail. file = ${fileEntity.toString}")
+
+      asDownloadFile(to) { stream =>
+        client(auth.accessToken).getThumbnail(sizeBound, format, fileEntity.path, fileEntity.rev, stream)
+      }
     }
   }
 
