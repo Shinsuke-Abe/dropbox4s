@@ -21,6 +21,7 @@ class CoreApiTest extends Specification with CoreApi {
   val createFile = new java.io.File(this.getClass.getResource("/testfiles/forupload.txt").toURI)
   val createImageFile = new java.io.File(this.getClass.getResource("/testfiles/foruploadimage.jpg").toURI)
   val rewriteFile = new java.io.File(this.getClass.getResource("/testfiles/forupdate.txt").toURI)
+  val rewriteImageFile = new java.io.File(this.getClass.getResource("/testfiles/forupdateimage.jpg").toURI)
 
   "clientIdentifier" should {
     "has dropbox4s version" in {
@@ -48,6 +49,18 @@ class CoreApiTest extends Specification with CoreApi {
       uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
 
       val updatedFile = uploadedFile update rewriteFile
+      updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      afterTestByFile(updatedFile, uploadTestFile)
+    }
+
+    "upload(chuncked) -> DbxEntry.File.update(chuncked) -> DbxEntry.File.remove cycle" in {
+      val uploadTestFile = "upload_chuncked_test.jpg"
+
+      val uploadedFile = createImageFile uploadTo(uploadFilePath(uploadTestFile), chunkSize = Some(10240))
+      uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val updatedFile = uploadedFile update(rewriteImageFile, chunkSize = Some(10240))
       updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
 
       afterTestByFile(updatedFile, uploadTestFile)

@@ -72,30 +72,41 @@ trait CoreApi {
   implicit class DbxRichFile(val localFile: File) {
     /**
      * upload file to Dropbox.<br/>
-     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc(uploadFile)</a>,
+     * and see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFileChunked%28int,%20java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20com.dropbox.core.DbxStreamWriter%29">SDK javadoc(uploadFileChunked)</a>
      *
      * @param to path to upload folder.
      * @param isForce if set to true, force upload. if set to false(default), file renamed automatically.
+     * @param chunkSize (optional) file upload chunk size. default is None.
      * @param auth authenticate finish class has access token
      * @return result of DbxClient.uploadFile
      */
-    def uploadTo(to: DropboxPath, isForce: Boolean = false)(implicit auth: DbxAuthFinish) = asUploadFile(localFile){ (file, stream) =>
-      if(isForce) client(auth.accessToken).uploadFile(to.path, DbxWriteMode.force, localFile.length, stream)
-      else client(auth.accessToken).uploadFile(to.path, DbxWriteMode.add, localFile.length, stream)
+    def uploadTo(to: DropboxPath, isForce: Boolean = false, chunkSize: Option[Int] = None)(implicit auth: DbxAuthFinish) = asUploadFile(localFile){ (file, stream) =>
+      val mode = if(isForce) DbxWriteMode.force else DbxWriteMode.add
+
+      chunkSize match {
+        case Some(chunk) => client(auth.accessToken).uploadFileChunked(chunk, to.path, mode, localFile.length, new DbxStreamWriter.InputStreamCopier(stream))
+        case None => client(auth.accessToken).uploadFile(to.path, mode, localFile.length, stream)
+      }
     }
   }
 
   implicit class DbxRichEntryFile(val fileEntity: DbxEntry.File) {
     /**
      * update by new file.<br/>
-     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>,
+     * and see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFileChunked%28int,%20java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20com.dropbox.core.DbxStreamWriter%29">SDK javadoc(uploadFileChunked)</a>
      *
      * @param newFile new file instance for update.
+     * @param chunkSize (optional) file upload chunk size. default is None.
      * @param auth authenticate finish class has access token
      * @return result of DbxClient.uploadFile
      */
-    def update(newFile: File)(implicit auth: DbxAuthFinish) = asUploadFile(newFile){ (file, stream) =>
-      client(auth.accessToken).uploadFile(fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
+    def update(newFile: File, chunkSize: Option[Int] = None)(implicit auth: DbxAuthFinish) = asUploadFile(newFile){ (file, stream) =>
+      chunkSize match {
+        case Some(chunk) => client(auth.accessToken).uploadFileChunked(chunk, fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, new DbxStreamWriter.InputStreamCopier(stream))
+        case None => client(auth.accessToken).uploadFile (fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
+      }
     }
 
     /**
