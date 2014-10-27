@@ -168,17 +168,41 @@ val hasFooFiles = search(addChildPath, "foo")
 
 ##### Other operations for File on Dropbox
 
-remove
-copyTo
-moveTo
+```Scala
+val copyTarget = DropboxPath("copy file path")
 
-copyRef
-copyFrom
+// copy file to another dropbox path(DbxEntry.File)
+uploadedFile copyTo copyTarget
 
-thumbnail
-restore
-shareLink
-tempDirectLink
+// or folder, use copyTo method on DropboxPath
+addChildPath copyTo copyTarget
+
+val moveTarget = DropboxPath("move file path")
+
+// move file to another dropbox path(DbxEntry.File)
+// or folder, use moveTo method on DropboxPath
+val movedFile = uploadedFile moveTo moveTarget
+
+// remove file from dropbox(DbxEntry.File)
+movedFile remove
+
+// remove folder from dropbox(DropboxPath)
+addChildPath remove
+```
+
+If copy file across uses, use `copyRef` method.
+```Scala
+// get copy ref for get file copy other user(DbxEntry.File).
+// or folder, use copyRef method on DropboxPath
+val ref = uploadedFile copyRef
+
+// in other user's application, copy file to user's dropbox path by using copy ref.
+// or folder, use copyFrom method on DropboxPath
+uploadedFile copyFrom ref
+```
+
+Core API has other methods, `thumbnail`, `restore`, `shareLink`, `tempDirectLink`, `revision`, `accountInfo`.
+See [scaladoc]() for details.
 
 
 ### Using Datastore API
