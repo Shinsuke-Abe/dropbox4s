@@ -222,8 +222,51 @@ class YourApplicataion {
 }
 ```
 
-
 #### Datastore API DSL
+
+#### Creating a datastore
+
+When creating account local datastore, use `get` method with set `orCreate` value to second parameter. 
+
+```Scala
+val datastore = get("datastorename", orCreate)
+```
+
+``
+
+shareable
+
+delete
+isShareable
+
+#### Roles(for shareable datastore)
+
+assignedRole
+assign
+withdrawRole
+
+#### Listing datastores
+
+listDatastores
+
+#### Getting a snapshot
+
+snapshot
+snapshot.tableNames
+
+#### Getting table and record
+
+snapshot.table(name)(converter)
+
+table.get
+table.select
+table.insert
+table.update
+table.delete
+table.truncate
+
+Note: Field type of record class must be `Int` or `String` or `List`
+
 In preparation.<br/>
 [Test code](https://github.com/Shinsuke-Abe/dropbox4s/blob/master/src/test/scala/dropbox4s/datastore/DatastoresApiTest.scala) for sample.
 
