@@ -261,9 +261,29 @@ datastore.delete
 
 #### Roles(for shareable datastore)
 
-assignedRole
-assign
-withdrawRole
+Any shareable datastores has access control list.
+Get assigned role to principle, use `assignedRole` method.
+
+```Scala
+val role = sharedDatastore.assignedRole
+```
+
+Assign role to principle, use `assign` method.
+
+```Scala
+sharedDatastore.assign(Viewer to Public)
+```
+
+`Viewer` and `Public` are role or principle object. Write `Role to Principle`, create datastore access control record. 
+
+Drop role for principle, use `withdrowRole` method.
+
+```Scala
+sharedDatastore.withdrawRole(Public)
+```
+
+See section 'Shared datastores' section of [offitial document](https://www.dropbox.com/developers/datastore/docs/http), detail info about principle and roles.
+Dropbox account creating shared datastore, set role is 'Owner'.
 
 #### Listing datastores
 
