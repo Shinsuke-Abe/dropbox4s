@@ -210,7 +210,7 @@ Datastore API of Dropbox4S is written by Scala. Without base sdk.<br/>
 Return values defined on this library.<br/>
 
 
-Import dropbox4s.datastore.DatastoresApi object for using Datastore API DSL and DbxAuthFinish instance set to implicit value.
+Import `dropbox4s.datastore.DatastoresApi` object for using Datastore API DSL and DbxAuthFinish instance set to implicit value.
 ```Scala
 class YourApplicataion {
   import DatastoresApi._
@@ -232,12 +232,32 @@ When creating account local datastore, use `get` method with set `orCreate` valu
 val datastore = get("datastorename", orCreate)
 ```
 
-``
+`orCreate` is predefined value by DatastoreApi object.
+If set second parameter is true, `get` method try to create datastore when datastore has parametarized name is not exist.
+Default value of second parameter is false, `get` method only to get.
 
-shareable
+Creating shareable datasotre, use `createShareable` method.
 
-delete
-isShareable
+```Scala
+val sharedDatastore = createShareable("youappname")
+```
+
+This datasotre is shared data across multiple Dropbox accounts.
+
+Note: Key of shareable datastore are unique across Dropbox.
+
+Check datastore is shared, use `isShareable` method has both of `get` and `createShareable` methods returns.
+
+```Scala
+datastore.isShareable // false
+sharedDatastore.isShareable // true
+```
+
+Delete datastore, use `delete` method.
+
+```Scala
+datastore.delete
+```
 
 #### Roles(for shareable datastore)
 
