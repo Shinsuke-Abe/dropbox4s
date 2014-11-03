@@ -45,6 +45,13 @@ object DatastoresApi {
 
   val orCreate = true
 
+  /**
+   * create shareable datastore by key.
+   *
+   * @param key datastore key string to base dsid
+   * @param auth authenticate finish class has access token
+   * @return Datastore instance
+   */
   def createShareable(key: String)(implicit auth: DbxAuthFinish) = {
     val parameter = CreateDatastoreParameter(key)
     Datastore(parameter.dsid, Some(CreateDatastoreRequestor.request(auth, parameter)))
