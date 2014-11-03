@@ -1,1 +1,14 @@
-wercker.yml
+box: amutake/activator@0.0.2
+
+build:
+  steps:
+    - script:
+        name: setup download root directory
+        code: |
+          if [ ! -e ${downloadRoot} ]; then
+            mkdir ${downloadRoot}
+          fi
+    - script:
+        name: run test
+        code: |
+          activator test
