@@ -6,3 +6,4 @@ src/test/resources/test.properties
 src/test/scala/dropbox4s/datastore/JsonDiffTest.scala
 src/test/scala/dropbox4s/datastore/SandboxTest.scala
 downloadRoot/
+wercker.yml
