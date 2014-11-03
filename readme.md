@@ -287,12 +287,26 @@ Dropbox account creating shared datastore, set role is 'Owner'.
 
 #### Listing datastores
 
-listDatastores
+To see what datastores exist within an account, call `listDatastores` method.
+
+```Scala
+val list = listDatastores
+```
 
 #### Getting a snapshot
 
-snapshot
-snapshot.tableNames
+To get snapshot of the current contents of datastore, call `snapshot` method.
+
+```Scala
+val snapshot = get("datastorename").snapshot
+```
+
+Snapshot has `tableNames` and `table` method.
+To get name list of tables on snapshot, call `tableNames` method.
+
+```Scala
+val names = snapshot.tableNames
+```
 
 #### Getting table and record
 
