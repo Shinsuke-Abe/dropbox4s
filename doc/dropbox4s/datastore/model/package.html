@@ -1,0 +1,186 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>model - dropbox4s.datastore.model</title>
+          <meta name="description" content="model - dropbox4s.datastore.model" />
+          <meta name="keywords" content="model dropbox4s.datastore.model" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'dropbox4s.datastore.model.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../../lib/package_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="dropbox4s">dropbox4s</a>.<a href="../package.html" class="extype" name="dropbox4s.datastore">datastore</a></p>
+        <h1>model</h1> <span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">model</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="dropbox4s.datastore.model.Datastore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DatastoreextendsLikeDatastorewithProductwithSerializable"></a>
+      <a id="Datastore:Datastore"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Datastore.html"><span class="name">Datastore</span></a><span class="params">(<span name="dsid">dsid: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="result">result: <span class="extype" name="scala.Option">Option</span>[<a href="../internal/jsonresponse/GetOrCreateDatastoreResult.html" class="extype" name="dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult">GetOrCreateDatastoreResult</a>]</span>)</span><span class="result"> extends <a href="LikeDatastore.html" class="extype" name="dropbox4s.datastore.model.LikeDatastore">LikeDatastore</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package@DatastoreextendsLikeDatastorewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p>
+    </li><li name="dropbox4s.datastore.model.LikeDatastore" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LikeDatastoreextendsAnyRef"></a>
+      <a id="LikeDatastore:LikeDatastore"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LikeDatastore.html"><span class="name">LikeDatastore</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package@LikeDatastoreextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p>
+    </li><li name="dropbox4s.datastore.model.Snapshot" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SnapshotextendsProductwithSerializable"></a>
+      <a id="Snapshot:Snapshot"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Snapshot.html"><span class="name">Snapshot</span></a><span class="params">(<span name="handle">handle: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="result">result: <a href="../internal/jsonresponse/SnapshotResult.html" class="extype" name="dropbox4s.datastore.internal.jsonresponse.SnapshotResult">SnapshotResult</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package@SnapshotextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p>
+    </li><li name="dropbox4s.datastore.model.Table" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Table[T]extendsProductwithSerializable"></a>
+      <a id="Table[T]:Table[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Table.html"><span class="name">Table</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="handle">handle: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="role">role: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="tid">tid: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="rev">rev: <span class="extype" name="scala.Int">Int</span></span>, <span name="converter">converter: (<span class="extype" name="dropbox4s.datastore.model.Table.T">T</span>) ⇒ <span class="extype" name="org.json4s.JValue">JValue</span></span>, <span name="rows">rows: <span class="extype" name="scala.List">List</span>[<a href="TableRow.html" class="extype" name="dropbox4s.datastore.model.TableRow">TableRow</a>[<span class="extype" name="dropbox4s.datastore.model.Table.T">T</span>]]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package@Table[T]extendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p>
+    </li><li name="dropbox4s.datastore.model.TableRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TableRow[T]extendsProductwithSerializable"></a>
+      <a id="TableRow[T]:TableRow[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TableRow.html"><span class="name">TableRow</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="rowid">rowid: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="data">data: <span class="extype" name="dropbox4s.datastore.model.TableRow.T">T</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#dropbox4s.datastore.model.package@TableRow[T]extendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
