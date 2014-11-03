@@ -1,6 +1,7 @@
 box: amutake/activator@0.0.2
-
+# Build definition
 build:
+  # The steps that will be executed on build
   steps:
     - script:
         name: setup download root directory
