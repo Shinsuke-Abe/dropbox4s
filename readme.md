@@ -202,7 +202,7 @@ uploadedFile copyFrom ref
 ```
 
 Core API has other methods, `thumbnail`, `restore`, `shareLink`, `tempDirectLink`, `revision`, `accountInfo`.
-See [scaladoc]() for details.
+See scaladoc(under `doc` directory on repository) for details.
 
 
 ### Using Datastore API
@@ -366,8 +366,7 @@ table.delete(row => row.name == "bar")
 table.truncate
 ```
 
-In preparation.<br/>
-[Test code](https://github.com/Shinsuke-Abe/dropbox4s/blob/master/src/test/scala/dropbox4s/datastore/DatastoresApiTest.scala) for sample.
+See scaladoc(under `doc` directory on repository) for details.
 
 ## About function addition for DSL
 New functions will be added for new version.<br/>
