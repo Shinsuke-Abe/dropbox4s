@@ -19,7 +19,7 @@ Dropbox4S has dependencies with following libraries.<br/>
 * json4s(native) 3.2.10
 * dropbox-core-sdk 1.7.6
 
-Note: These libraries on latest stable at October 21,2014.
+Note: These libraries on latest stable at November 3rd,2014.
 
 
 ## How to use
@@ -310,16 +310,61 @@ val names = snapshot.tableNames
 
 #### Getting table and record
 
-snapshot.table(name)(converter)
+To get table in the current contents, call `table` method with converter function scala object to json value.
+Json value is `JValue` class, this class is demanded by json4s.
 
-table.get
-table.select
-table.insert
-table.update
-table.delete
+Note: Field type of record class must be below types.
+
+* `Int`
+* `Boolean`
+* `String`
+* `WrappedBytes`
+* `WrappedInt`
+* `WrappedSpecial` is implementing to `PlusInf` or `MinusInf` or `Nan` objects
+* `WrappedTimestamp`
+* `List` or `Either` or `Option` of above classes
+
+```Scala
+case class SampleRow(name: String, price: Int)
+
+val converter = SampleRow => JValue = (data) => {
+  ("name" -> data.name) ~ ("price" -> data.price)
+}
+
+val sampleTable = snapshot.table("SampleRow")(converter)
+```
+
+`table` method return `Table` object has `rows` fields.
+This field is mapped data has same tid(table id) in the current contents.
+
+`Table` object has some method for operating rows.
+
+```Scala
+// To insert new records with set rowid for identify data
+table.insert(TableRow("rowidfoo", SampleRow("foo", 100)), TableRow("rowidbar", SampleRow("bar", 200)))
+
+// To get single row, parameter is rowid
+sampleTable.get("rowidfoo")
+
+// To get multi rows filtered by condition
+table.select(data => data.price > 300)
+
+// To update record by rowid
+table.update("rowidfoo", SampleRow("foo", 350))
+
+// To update records by condition
+// First parameter is value update rule, second parameter is condition
+table.update(data => data.copy(price = price * 1.08))(row => row.price < 100)
+
+// To delete records by rowids
+table.delete("rowidfoo", "rowidbar")
+
+// To delete records by condition
+table.delete(row => row.name == "bar")
+
+// To truncate rows of table
 table.truncate
-
-Note: Field type of record class must be `Int` or `String` or `List`
+```
 
 In preparation.<br/>
 [Test code](https://github.com/Shinsuke-Abe/dropbox4s/blob/master/src/test/scala/dropbox4s/datastore/DatastoresApiTest.scala) for sample.
