@@ -22,7 +22,7 @@ import dropbox4s.commons.DropboxException
 /**
  * @author mao.instantlife at gmail.com
  */
-case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
+case class Table[T](handle: String, role: Option[Int], tid: String, rev: Int, converter: T => JValue, rows: List[TableRow[T]]) {
   val getKey: (String, JValue) => String = (key, _) => key
 
   def get(rowid: String) = rows.find(_.rowid == rowid)
@@ -66,6 +66,8 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
 
   private def opdict(key: String, fieldOp: JValue) = JObject(List(JField(key, fieldOp)))
 
+  private val wrappedAtomKeys = List("I", "T", "B", "N")
+
   /**
    * generate atom field update operator from json diffs.
    *
@@ -75,7 +77,7 @@ case class Table[T](handle: String, tid: String, rev: Int, converter: T => JValu
    * @return list of update field operator
    */
   private def toAtomOps(diffValues: JValue, op: (JValue) => JValue)(implicit arrayKeys: List[String]):List[JObject] =
-    selectJField(diffValues, (key, _) => !arrayKeys.exists(_ == key), (key, value) => opdict(key, op(value)))
+    selectJField(diffValues, (key, _) => {!arrayKeys.exists(_ == key) && !wrappedAtomKeys.exists(_ == key)}, (key, value) => opdict(key, op(value)))
 
   /**
    * generate array field update operator from json diffs.

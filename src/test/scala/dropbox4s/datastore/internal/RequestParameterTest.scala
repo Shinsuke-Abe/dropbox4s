@@ -4,12 +4,16 @@ package dropbox4s.datastore.internal
  * @author mao.instantlife at gmail.com
  */
 
-import org.specs2.mutable._
-import dropbox4s.datastore.internal.requestparameter.{DataDelete, PutDeltaParameter, DataInsert}
-import org.json4s._
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
+import java.security.MessageDigest
+import java.util.Date
+
 import dropbox4s.datastore.TestDummyData
+import dropbox4s.datastore.internal.requestparameter.{CreateDatastoreParameter, DataDelete, DataInsert, PutDeltaParameter}
+import org.apache.commons.codec.binary.Base64
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.specs2.mutable._
 
 class RequestParameterTest extends Specification {
   implicit val format = DefaultFormats
@@ -45,6 +49,25 @@ class RequestParameterTest extends Specification {
     "list can convert to Json string" in {
       compact(render(changesList)) must
         equalTo("""[["I","test-table","testrecord",{"test":"test-data"}],["D","test-table","testrecord"]]""")
+    }
+  }
+
+  "CreateDatastoreParameter#dsid" should {
+    val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
+    val md = MessageDigest.getInstance("SHA-256")
+
+    "throw IllegalArgumentException if set null value for key" in {
+      CreateDatastoreParameter(null) must throwA[IllegalArgumentException]
+    }
+
+    "generate dsid from key string" in {
+      val testKey = s"dropbox4s-test-shareable-datastore-${createTimeStamp}"
+
+      md.update(testKey.getBytes)
+
+      val expectedDsid = "." + Base64.encodeBase64URLSafeString(md.digest())
+
+      CreateDatastoreParameter(testKey).dsid must equalTo(expectedDsid)
     }
   }
 }

@@ -21,4 +21,4 @@ package dropbox4s.datastore.internal.jsonresponse
  */
 case class AwaitResult(get_deltas: Option[AwaitDeltasResult], list_datastores: Option[ListDatastoresResult])
 
-case class AwaitDeltasResult
+case class AwaitDeltasResult()

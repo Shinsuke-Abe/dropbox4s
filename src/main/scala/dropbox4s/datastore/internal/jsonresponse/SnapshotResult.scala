@@ -21,6 +21,6 @@ import org.json4s.JsonAST.JValue
 /**
  * @author mao.instantlife at gmail.com
  */
-case class SnapshotResult(rows: List[Row], rev: Int)
+case class SnapshotResult(rows: List[Row], rev: Int, role: Option[Int])
 
 case class Row(tid: String, rowid: String, data: JValue)

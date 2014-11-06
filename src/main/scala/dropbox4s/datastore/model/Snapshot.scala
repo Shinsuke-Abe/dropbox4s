@@ -30,6 +30,7 @@ case class Snapshot(handle: String, result: SnapshotResult) {
 
   def table[T: Manifest](name: String)(generator: T => JValue) = Table(
     handle,
+    result.role,
     name,
     result.rev,
     generator,

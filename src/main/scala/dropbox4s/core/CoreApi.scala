@@ -19,8 +19,10 @@ package dropbox4s.core
 import com.dropbox.core._
 import java.util.Locale
 import java.io.{File, FileOutputStream, FileInputStream}
+import dropbox4s.commons.DropboxException
+
 import collection.JavaConversions._
-import dropbox4s.core.model.DropboxPath
+import dropbox4s.core.model.{CopyRef, DropboxPath}
 
 /**
  * @author mao.instantlife at gmail.com
@@ -30,7 +32,7 @@ trait CoreApi {
   val version: String
   val locale: Locale = Locale.getDefault
 
-  lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.1.0"
+  lazy val clientIdentifier = s"${applicationName}/${version} dropbox4s/0.2.0"
   lazy val requestConfig = new DbxRequestConfig(clientIdentifier, locale.toString)
 
   lazy val client = new DbxClient(requestConfig, _: String)
@@ -70,31 +72,70 @@ trait CoreApi {
   implicit class DbxRichFile(val localFile: File) {
     /**
      * upload file to Dropbox.<br/>
-     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc(uploadFile)</a>,
+     * and see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFileChunked%28int,%20java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20com.dropbox.core.DbxStreamWriter%29">SDK javadoc(uploadFileChunked)</a>
      *
      * @param to path to upload folder.
      * @param isForce if set to true, force upload. if set to false(default), file renamed automatically.
+     * @param chunkSize (optional) file upload chunk size. default is None.
      * @param auth authenticate finish class has access token
      * @return result of DbxClient.uploadFile
      */
-    def uploadTo(to: DropboxPath, isForce: Boolean = false)(implicit auth: DbxAuthFinish) = asUploadFile(localFile){ (file, stream) =>
-      if(isForce) client(auth.accessToken).uploadFile(to.path, DbxWriteMode.force, localFile.length, stream)
-      else client(auth.accessToken).uploadFile(to.path, DbxWriteMode.add, localFile.length, stream)
+    def uploadTo(to: DropboxPath, isForce: Boolean = false, chunkSize: Option[Int] = None)(implicit auth: DbxAuthFinish) = asUploadFile(localFile){ (file, stream) =>
+      val mode = if(isForce) DbxWriteMode.force else DbxWriteMode.add
+
+      chunkSize match {
+        case Some(chunk) => client(auth.accessToken).uploadFileChunked(chunk, to.path, mode, localFile.length, new DbxStreamWriter.InputStreamCopier(stream))
+        case None => client(auth.accessToken).uploadFile(to.path, mode, localFile.length, stream)
+      }
     }
   }
 
   implicit class DbxRichEntryFile(val fileEntity: DbxEntry.File) {
     /**
      * update by new file.<br/>
-     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFile%28java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20java.io.InputStream%29">SDK javadoc</a>,
+     * and see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#uploadFileChunked%28int,%20java.lang.String,%20com.dropbox.core.DbxWriteMode,%20long,%20com.dropbox.core.DbxStreamWriter%29">SDK javadoc(uploadFileChunked)</a>
      *
      * @param newFile new file instance for update.
+     * @param chunkSize (optional) file upload chunk size. default is None.
      * @param auth authenticate finish class has access token
      * @return result of DbxClient.uploadFile
      */
-    def update(newFile: File)(implicit auth: DbxAuthFinish) = asUploadFile(newFile){ (file, stream) =>
-      client(auth.accessToken).uploadFile(fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
+    def update(newFile: File, chunkSize: Option[Int] = None)(implicit auth: DbxAuthFinish) = asUploadFile(newFile){ (file, stream) =>
+      chunkSize match {
+        case Some(chunk) => client(auth.accessToken).uploadFileChunked(chunk, fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, new DbxStreamWriter.InputStreamCopier(stream))
+        case None => client(auth.accessToken).uploadFile (fileEntity.path, DbxWriteMode.update(fileEntity.rev), newFile.length, stream)
+      }
     }
+
+    /**
+     * get thumbnail for file.<br/>
+     * if file don't have thumbnail, throw DropboxException.
+     * more detail, see the<a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#getThumbnail%28com.dropbox.core.DbxThumbnailSize,%20com.dropbox.core.DbxThumbnailFormat,%20java.lang.String,%20java.lang.String,%20java.io.OutputStream%29">SDK javadoc</a>
+     *
+     * @param sizeBound The returned thumbnail will never be greater than the dimensions given here.
+     * @param to local file path for download thumbnail.
+     * @param format The image format to use for thumbnail data. default is DbxThumbnailFormat.PNG.
+     * @param auth authenticate finish class has access token
+     * @return result of Dbxclient.getThumbnail
+     */
+    def thumbnail(sizeBound: DbxThumbnailSize, to: String, format: DbxThumbnailFormat = DbxThumbnailFormat.PNG)(implicit auth: DbxAuthFinish) = {
+      if(!fileEntity.mightHaveThumbnail) throw DropboxException(s"file have not thumbnail. file = ${fileEntity.toString}")
+
+      asDownloadFile(to) { stream =>
+        client(auth.accessToken).getThumbnail(sizeBound, format, fileEntity.path, fileEntity.rev, stream)
+      }
+    }
+
+    /**
+     * restore file by receive file revision.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#restoreFile%28java.lang.String,%20java.lang.String%29">SDK javadoc</a>
+     *
+     * @param auth authenticate finish class has access token
+     * @return result of DbxClient.restoreFile
+     */
+    def restore(implicit auth: DbxAuthFinish) = client(auth.accessToken).restoreFile(fileEntity.path, fileEntity.rev)
   }
 
   implicit class RichDropboxPath(val dropboxPath: DropboxPath) {
@@ -161,6 +202,25 @@ trait CoreApi {
      * @return result of DbxClient.move
      */
     def moveTo(toPath: DropboxPath)(implicit auth: DbxAuthFinish) = client(auth.accessToken).move(path, toPath.path)
+
+    /**
+     * create copy ref of receiver path.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#createCopyRef%28java.lang.String%29">SDK javadoc</a>
+     *
+     * @param auth authenticate finish class has access token
+     * @return CopyRef, case class for wrap result of DbxClient.createCopyRef
+     */
+    def copyRef(implicit auth:DbxAuthFinish) = CopyRef(client(auth.accessToken).createCopyRef(path))
+
+    /**
+     * copy file from copy ref to receiver path.<br/>
+     * more detail, see the <a href="http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/com/dropbox/core/DbxClient.html#copyFromCopyRef%28java.lang.String,%20java.lang.String%29">SDK javadoc</a>
+     *
+     * @param copyRef CopyRef, case class for wrap result of DbxClient.createCopyRef
+     * @param auth authenticate finish class has access token
+     * @return result of DbxClient.copyFromCopyRef
+     */
+    def copyFrom(copyRef: CopyRef)(implicit auth:DbxAuthFinish) = client(auth.accessToken).copyFromCopyRef(copyRef.ref, path)
 
     /**
      * create sharable url of receiver path.<br/>

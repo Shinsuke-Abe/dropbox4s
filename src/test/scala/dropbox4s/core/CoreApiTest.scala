@@ -4,10 +4,11 @@ package dropbox4s.core
  * @author mao.instantlife at gmail.com
  */
 
+import dropbox4s.commons.DropboxException
 import org.specs2.mutable._
 import java.util.Locale
 import dropbox4s.core.model.DropboxPath
-import com.dropbox.core.DbxEntry
+import com.dropbox.core.{DbxThumbnailSize, DbxEntry}
 
 class CoreApiTest extends Specification with CoreApi {
   val version = "1.0"
@@ -18,7 +19,15 @@ class CoreApiTest extends Specification with CoreApi {
   implicit val auth = testUser1Auth
 
   val createFile = new java.io.File(this.getClass.getResource("/testfiles/forupload.txt").toURI)
+  val createImageFile = new java.io.File(this.getClass.getResource("/testfiles/foruploadimage.jpg").toURI)
   val rewriteFile = new java.io.File(this.getClass.getResource("/testfiles/forupdate.txt").toURI)
+  val rewriteImageFile = new java.io.File(this.getClass.getResource("/testfiles/forupdateimage.jpg").toURI)
+
+  "clientIdentifier" should {
+    "has dropbox4s version" in {
+      clientIdentifier must equalTo("TestAppForLibrary/1.0 dropbox4s/0.2.0")
+    }
+  }
 
   "accountInfo" should {
     "call DbxClient.getAccountInfo" in {
@@ -45,6 +54,34 @@ class CoreApiTest extends Specification with CoreApi {
       afterTestByFile(updatedFile, uploadTestFile)
     }
 
+    "upload(chuncked) -> DbxEntry.File.update(chuncked) -> DbxEntry.File.remove cycle" in {
+      val uploadTestFile = "upload_chuncked_test.jpg"
+
+      val uploadedFile = createImageFile uploadTo(uploadFilePath(uploadTestFile), chunkSize = Some(10240))
+      uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val updatedFile = uploadedFile update(rewriteImageFile, chunkSize = Some(10240))
+      updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      afterTestByFile(updatedFile, uploadTestFile)
+    }
+
+    "upload -> DbxEntry.File.update -> restore(uploaded revision) -> DbxEntry.File.remove cycle" in {
+      val uploadTestFile = "restore_test.txt"
+
+      val uploadedFile = createFile uploadTo uploadFilePath(uploadTestFile)
+      uploadedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val updatedFile = uploadedFile update rewriteFile
+      updatedFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+
+      val restoredFile = uploadedFile.restore
+      restoredFile.path must equalTo(uploadFilePath(uploadTestFile).path)
+      restoredFile.rev must not equalTo(updatedFile.rev)
+
+      afterTestByFile(updatedFile, uploadTestFile)
+    }
+
     "upload -> DropboxPath.remove cycle" in {
       val removeTestFile = "remove_test.txt"
 
@@ -52,6 +89,35 @@ class CoreApiTest extends Specification with CoreApi {
         equalTo(uploadFilePath(removeTestFile).path)
 
       afterTestByPath(uploadFilePath(removeTestFile), removeTestFile)
+    }
+
+    "upload image -> DbxEntry.File.thumbnail -> DbxEntry.File.remove cycle" in {
+      val forThumbnailImage = "thumbnail_test.jpg"
+      val thumbnailImage = "thumbnail.png"
+
+      val uploadedFile = prepareCycleTest(thumbnailImage, uploadFilePath(forThumbnailImage), createImageFile)
+
+      // download thumbnail
+      val thumbnailFile = uploadedFile.thumbnail(DbxThumbnailSize.w64h64, downloadFilePath(thumbnailImage))
+      thumbnailFile must beAnInstanceOf[DbxEntry.File]
+      thumbnailFile.isFile must beTrue
+
+      val downloadedThumbnail = new java.io.File(downloadFilePath(thumbnailImage))
+      downloadedThumbnail.exists must beTrue
+      downloadedThumbnail.getName must endWith(".png")
+
+      afterTestByFile(uploadedFile, forThumbnailImage)
+    }
+
+    "upload text -> DbxEntry.File.thumbnail -> throw DropboxException -> DbxEntry.File.remove cycle" in {
+      val forThumbnailFile = "thumbnail_test.txt"
+      val thumbnailImage = "thumbnail.png"
+
+      val uploadedFile = prepareCycleTest(forThumbnailFile, uploadFilePath(forThumbnailFile))
+
+      // download thumbnail
+      uploadedFile.thumbnail(DbxThumbnailSize.w64h64, downloadFilePath(thumbnailImage)) must
+        throwA[DropboxException](message = s"file have not thumbnail. file = ")
     }
 
     "upload -> DbxEntry.File.downloadTo -> DbxEntry.File.remove cycle" in {
@@ -76,13 +142,13 @@ class CoreApiTest extends Specification with CoreApi {
       afterTestByPath(uploadFilePath(downloadFileName), downloadFileName)
     }
 
-    def prepareCycleTest(downloadFileName: String, toPath: DropboxPath) = {
+    def prepareCycleTest(downloadFileName: String, toPath: DropboxPath, uploadFile: java.io.File = createFile) = {
       val downloadFile = new java.io.File(downloadRoot + downloadFileName)
 
       if(downloadFile.exists) downloadFile.delete
       downloadFile.exists must beFalse
 
-      createFile uploadTo toPath
+      uploadFile uploadTo toPath
     }
 
     def afterTestByPath(path: DropboxPath, fileName: String) = {
@@ -117,6 +183,22 @@ class CoreApiTest extends Specification with CoreApi {
       uploadFilePath(copyFilename) copyTo (copyDestPath / copyFilename)
 
       verifyCopyFile(copyDestPath, copyFilename)
+    }
+
+    "upload -> DropboxPath.copyRef to DropboxPath.copyFrom -> search(to) -> remove(from) -> remove(to)" in {
+      val copyFilename = "dropbox_path_copy_ref_test.txt"
+      val copyDestPath = DropboxPath("/test_copycycle") / "from_res_file.txt"
+
+      val uploadedFile = prepareCycleTest(copyFilename, uploadFilePath(copyFilename))
+
+      val newRef = uploadedFile.copyRef
+
+      copyDestPath copyFrom newRef
+
+      (search(DropboxPath("/test_copycycle"), "from_res_file.txt")) must have size(1)
+
+      afterTestByPath(uploadCyclePath / copyFilename, copyFilename)
+      afterTestByPath(copyDestPath, "from_res_file.txt")
     }
 
     def verifyCopyFile(dest: DropboxPath, fileName: String) = {

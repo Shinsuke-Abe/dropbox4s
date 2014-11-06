@@ -4,16 +4,19 @@ package dropbox4s.datastore
  * @author mao.instantlife at gmail.com
  */
 
-import org.specs2.mutable._
 import java.util.Date
-import dropbox4s.datastore.model.{Table, TableRow, Snapshot, Datastore}
-import org.json4s.native.JsonMethods._
-import org.json4s._
-import org.json4s.JsonDSL._
-import dropbox4s.datastore.internal.jsonresponse.SnapshotResult
+
 import dropbox4s.commons.DropboxException
-import dropbox4s.datastore.internal.jsonresponse.GetOrCreateDatastoreResult
-import scala.Some
+import dropbox4s.datastore.acl._
+import dropbox4s.datastore.internal.jsonresponse.{GetOrCreateDatastoreResult, SnapshotResult}
+import dropbox4s.datastore.internal.requestparameter.CreateDatastoreParameter
+import dropbox4s.datastore.model.{Datastore, Snapshot, Table, TableRow}
+import org.json4s.JsonAST.JValue
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.specs2.matcher.MatchResult
+import org.specs2.mutable._
 
 class DatastoresApiTest extends Specification {
   import dropbox4s.datastore.DatastoresApi._
@@ -21,7 +24,7 @@ class DatastoresApiTest extends Specification {
   implicit val auth = TestConstants.testUser1Auth
   val createTimeStamp = "%tY%<tm%<td%<tH%<tM%<tS%<tL" format new Date
 
-  val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0)))
+  val notExistsDs = Datastore("dsnotfound", Some(GetOrCreateDatastoreResult("handlenotfound", 0, false, None)))
   val messageNotFound = s"No datastore was found for handle: u'${notExistsDs.handle}'"
   def deleteOkMessage(handle: String) = s"Deleted datastore with handle: u'${handle}'"
 
@@ -45,6 +48,13 @@ class DatastoresApiTest extends Specification {
 
     "get Datastore result with orCreate flag" in {
       createdDs.dsid must equalTo(s"$testDsName")
+      createdDs.isShareable must beFalse
+
+      val exceptionMessage = "This datastore is not shareable."
+
+      createdDs.assignedRole(Public) must throwA[DropboxException](message = exceptionMessage)
+      createdDs.assign(Editor to Team) must throwA[DropboxException](message = exceptionMessage)
+      createdDs.withdrawRole(Public) must throwA[DropboxException](message = exceptionMessage)
 
       val dsList = listDatastores
       dsList.exists(_.dsid == testDsName) must beTrue
@@ -124,6 +134,8 @@ class DatastoresApiTest extends Specification {
 
     testTable.rows must have size(6)
 
+    testTable.select(row => row.data.price >= 500) must have size(2)
+
     // update multi row
     testTable.update(data => data.copy(price = data.price - 100)){ row => (row.data.price >= 500) }
 
@@ -170,6 +182,72 @@ class DatastoresApiTest extends Specification {
     }
   }
 
+  "shareable datastore api" should {
+    "throw exception on creation with null key" in {
+      createShareable(null) must throwA[IllegalArgumentException]
+    }
+
+    "throw exception on creation with empty key" in {
+      createShareable("") must throwA[IllegalArgumentException]
+    }
+
+    "create shareable datastore" in {
+      shareableDatastoreSpec("create") {(createdDs, shareableDatastoreId) =>
+        createdDs.dsid must equalTo(shareableDatastoreId)
+        createdDs.isShareable must beTrue
+
+        import dropbox4s.datastore.atom.AtomsConverter._
+
+        def assertRole(actual: Option[Int], expected: Int) = {
+          actual must beSome(expected)
+        }
+
+        assertRole(createdDs.role, Owner.role)
+
+        get(shareableDatastoreId).handle must equalTo(createdDs.handle)
+      }
+    }
+
+    "include datastore list" in {
+      shareableDatastoreSpec("get_list") { (_, shareableDatastoreId) =>
+        val dsList = listDatastores
+        dsList.exists(_.dsid == shareableDatastoreId) must beTrue
+        dsList.await.list_datastores.get.exists(_.dsid == shareableDatastoreId) must beTrue
+      }
+    }
+
+    "has assigned role to principle of shareable datastore" in {
+      shareableDatastoreSpec("for_role") { (createdDs, _) =>
+        createdDs.assignedRole(Public) must beNone
+        createdDs.assignedRole(Team) must beNone
+
+        // assign new role
+        createdDs.assign(Viewer to Public).rev must equalTo(1)
+        createdDs.assignedRole(Public) must beSome(Viewer)
+
+        // update role
+        createdDs.assign(Editor to Public).rev must equalTo(2)
+        createdDs.assignedRole(Public) must beSome(Editor)
+
+        // clear role
+        createdDs.withdrawRole(Public).rev must equalTo(3)
+        createdDs.assignedRole(Public) must beNone
+      }
+    }
+
+    def shareableDatastoreSpec[T](testTarget: String)(specs: (Datastore, String) => MatchResult[T]) = {
+      // create test datastore
+      val testDsName = s"test_shareable_ds_${testTarget}_${createTimeStamp}"
+      val createdDs = createShareable(s"$testDsName")
+      val shareableDatastoreId = CreateDatastoreParameter(testDsName).dsid
+
+      specs(createdDs, shareableDatastoreId)
+
+      // delete shareable datastore
+      createdDs.delete.ok must equalTo(deleteOkMessage(createdDs.handle))
+    }
+  }
+
   "snapshot" should {
     "throw exception not found datastore handle" in {
       notExistsDs.snapshot must throwA[DropboxException](message = messageNotFound)
@@ -205,7 +283,7 @@ class DatastoresApiTest extends Specification {
 
   "insert" should {
     "throw exception not found datastore handle" in {
-      val notFoundTable = Table[TestDummyData]("handlenotfound", "not-found-table", 0, dummyJsonConverter, List.empty)
+      val notFoundTable = Table[TestDummyData]("handlenotfound", None, "not-found-table", 0, dummyJsonConverter, List.empty)
       notFoundTable.insert(insertRow) must throwA[DropboxException](message = messageNotFound)
     }
   }

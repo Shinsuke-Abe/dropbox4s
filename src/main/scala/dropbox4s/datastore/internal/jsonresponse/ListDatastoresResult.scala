@@ -1,5 +1,6 @@
 package dropbox4s.datastore.internal.jsonresponse
 
+import dropbox4s.datastore.atom.WrappedTimestamp
 import dropbox4s.datastore.model.LikeDatastore
 
 /*
@@ -23,8 +24,6 @@ import dropbox4s.datastore.model.LikeDatastore
  */
 case class ListDatastoresResult(datastores: List[DsInfo], token: String)
 
-case class DsInfo(dsid: String, handle: String, rev: Int, info: Option[InfoDict] = None) extends LikeDatastore
+case class DsInfo(dsid: String, handle: String, rev: Int, info: Option[InfoDict] = None, role: Option[Int]) extends LikeDatastore
 
 case class InfoDict(title: String, mtime: WrappedTimestamp)
-
-case class WrappedTimestamp(T: String)

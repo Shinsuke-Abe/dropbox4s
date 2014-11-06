@@ -26,4 +26,8 @@ case class Datastore(dsid: String, result: Option[GetOrCreateDatastoreResult]) e
     case Some(dsresult) => dsresult.handle
     case None => null
   }
+
+  def role =
+    if(result.isDefined) result.get.role
+    else None
 }
