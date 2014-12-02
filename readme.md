@@ -203,6 +203,70 @@ uploadedFile copyFrom ref
 Core API has other methods, `thumbnail`, `restore`, `shareLink`, `tempDirectLink`, `revision`, `accountInfo`.
 See scaladoc(under `doc` directory on repository) for details.
 
+### Full example
+
+You can find a [tutorial on the official website](https://www.dropbox.com/developers/core/start/java) describing how to use the java sdk. Below is the code of this tutorial written using dropbox4s.
+
+```Scala
+import com.dropbox.core.{DbxAppInfo, DbxAuthFinish, DbxWebAuthNoRedirect}
+import com.dropbox.core.DbxEntry.WithChildren
+import dropbox4s.core.CoreApi
+import dropbox4s.core.model.DropboxPath
+import scala.language.postfixOps
+
+object TestDropbox extends CoreApi {
+
+  // implements fields
+  val applicationName = "YourApplicationName"
+  val version = "1.0.0" // your application version(string)
+  val appKey = "INSERT_APP_KEY";
+  val appSecret = "INSERT_APP_SECRET";
+
+  val appInfo = new DbxAppInfo(appKey, appSecret);
+
+  val webAuth = new DbxWebAuthNoRedirect(requestConfig, appInfo);
+
+  val authorizeUrl: String = webAuth.start();
+
+  def main(args: Array[String]) = {
+    println("1. Go to: " + authorizeUrl);
+    println("2. Click \"Allow\" (you might have to log in first)");
+    println("3. Copy the authorization code.");
+
+    val code = readLine("Please, past the authorization code here: ")
+
+    // This will fail if the user enters an invalid authorization code.
+    implicit val auth: DbxAuthFinish = webAuth.finish(code) // how to get oauth access token, see dropbox-core-sdk document.
+    val accessToken: String = auth.accessToken;
+
+    println("Linked account: " + client(accessToken).getAccountInfo().displayName);
+
+    val appPath = DropboxPath("/")
+
+    // Upload a file
+    val localFile = new java.io.File("working-draft.txt")
+    val remoteFile = DropboxPath("/magnum-opus.txt")
+    val uploadedFile = localFile uploadTo remoteFile
+
+    // If you want to erase the uploaded file each time (without creating versions with numbers)
+    // Be sure to set the isForced parameter to true
+    // val uploadedFile = localFile uploadTo(remoteFile, true)
+
+
+    // List directory
+    val children: WithChildren = appPath children
+
+    for (child <- children) {
+      println("	" + child.name + ": " + child.toString());
+    }
+
+    // Download file
+    val myFile = remoteFile downloadTo "magnum-opus.txt"
+
+  }
+}
+```
+
 
 ### Using Datastore API
 Datastore API of Dropbox4S is written in Scala, without using the base sdk.<br/>
