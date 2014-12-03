@@ -1,25 +1,26 @@
 # Dropbox4S
-This is a Scala library of [Dropbox API](https://www.dropbox.com/developers). <br/>
+This is a Scala library for the [Dropbox API](https://www.dropbox.com/developers). <br/>
 Dropbox4S supports [Core API](https://www.dropbox.com/developers/core) and [Datastore API](https://www.dropbox.com/developers/datastore).<br/>
-Supported Scala version is 2.10.x and 2.11.x
+Supported Scala version are 2.10.x and 2.11.x
 
 
 ## Install
 Add the following dependencies to build.sbt.<br/>
 ```Scala
 resolvers += "bintray" at "http://dl.bintray.com/shinsuke-abe/maven"
+
 libraryDependencies += "com.github.Shinsuke-Abe" %% "dropbox4s" % "0.2.0"
 ```
 
 
 ## Dependencies with other libraries
-Dropbox4S has dependencies with following libraries.<br/>
+Dropbox4S has dependencies with the following libraries:<br/>
 
 * dispatch 0.11.0
 * json4s(native) 3.2.10
 * dropbox-core-sdk 1.7.6
 
-Note: These libraries on latest stable at November 3rd,2014.
+Note: These libraries are the latest stable releases (November 3rd, 2014).
 
 
 ## How to use
@@ -27,12 +28,13 @@ Dropbox4S supports Core API and Datastore API.<br/>
 
 
 ### Using Core API
-Core API of Dropbox4S is DSL for dropbox-core-sdk.<br/>
-Return value of DSL is dropbox-core-sdk's classes.
-Detail these classes, see [official documents](http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/).<br/>
+The core API of Dropbox4S is a DSL for dropbox-core-sdk (the java SDK).<br/>
+The return values of the DSL are dropbox-core-sdk's classes.
+For more detail about these classes, see [the official dropbox sdk documentation](http://dropbox.github.io/dropbox-sdk-java/api-docs/v1.7.x/).<br/>
 
 
-First, trait `dropbox4s.core.CoreApi` mixin to your application class and implements some fields and DbxAuthFinish instance set to implicit value.
+First, extends the `dropbox4s.core.CoreApi` trait and implements some of the required fields. Be sure to define the `val auth: DbxAuthFinish` as implicit.
+
 ```Scala
 class YourApplication extends CoreApi {
   // implements fields
@@ -49,10 +51,10 @@ class YourApplication extends CoreApi {
 }
 ```
 Note:<br/>
-Core API requires client identifier on request. Higher library on basic SDK should append library identifier.<br/>
-On Dropbox4S, append library identifier "dropbox4s/0.2.0" to your identifier.<br/>
-For example, if your application identifier is "my_file_apps/1.0.0",
-Dropbox4S send identifier "my_file_apps/1.0.0 dropbox4s/0.2.0" to API.<br/>
+The Core API requires a client identifier for each request. Libraries based on the basic SDK should append this identifier.<br/>
+With Dropbox4S, it's done fore you. The library identifier added to each request is "dropbox4s/0.2.0".<br/>
+For example, if your application identifier is "my_file_apps/1.0.0" (defined using the `applicationName` and `version` values),
+Dropbox4S will send the identifier "my_file_apps/1.0.0 dropbox4s/0.2.0" to the API.<br/>
 
 
 #### Core API DSL
@@ -63,8 +65,8 @@ Core API DSL is provided by these conversions.
 
 ##### Dropbox Path
 
-To demonstrate either path on local or dropbox, Core API DSL has `dropbox4s.core.model.DropboxPath` class.
-API operate dropbox files accepts path as DropboxPath class.
+To demonstrate either a local path or a remote one on dropbox, the Core API DSL has a `dropbox4s.core.model.DropboxPath` class.
+The parts of the API operating on dropbox files accept a path as a `DropboxPath` class.
 
 Create DropboxPath class.
 ```Scala
@@ -78,14 +80,14 @@ Add child for DropboxPath.
 val addChildPath = appPath / "childdir"
 ```
 
-DropboxPath has parent and name method.
+DropboxPath has parent and name methods.
 ```Scala
 addChildPath.parent // returns "yourapplicationpath"
 addChildPath.name   // returns "childdir" 
 ```
 
 Only create new path for `DropboxPath` instance, not applied on dropbox.
-Use `createFolder` method to apply on dropbox.
+Use `createFolder` method to apply it on dropbox.
 ```Scala
 createFolder(addChildPath)
 ```
@@ -93,7 +95,7 @@ createFolder(addChildPath)
 
 ##### Uploading File
 
-A file on local machine upload to dropbox, first time.
+Uploading a local file to dropbox for the first time.
 ```Scala
 val localFile = new java.io.File("your local file ptah")
 val uploadedFile = localFile uploadTo addChildPath
@@ -101,49 +103,46 @@ val uploadedFile = localFile uploadTo addChildPath
 
 `uploadTo` method returns `com.dropbox.core.DbcEntry.File` instance.
 
-If a file already in same path on dropbox, API create a copy added prefix number.
-Use updating file APIs for update files on dropbox, or uplaod file forced set `isForced` parameter to true (default, false).
+If a file already exists with the same path on dropbox, the API creates a copy with an added suffix number.
+To update a file on dropbox, you can use the "updating file APIs" of Dropbox4s. If you want to overwrite the remote file with the uploaded one, set the `isForced` parameter to true (default, false).
 ```Scala
 // upload file forced
 val uploadedFile = localFile uploadTo(addChildPath, true)
 ```
 
-In use to `isForced` parameter, if a file already in same path on dropbox, API update a exist file.
-
-On upload to big size file, set `Some(Int)` value to `chunkSize` parameter(default, `None`).
-If set this parameter, dropbox4s uses chunked upload API.
+If you want to upload a big file, you will need to use the chunked uploads functionality. To do so, set `Some(Int)` value to the `chunkSize` parameter (default, `None`).
+If you set this parameter, dropbox4s will use the chunked upload API.
 ```
 // for chuncked upload, chunk size is 10kb.
 val uploadedFile = localFile uploadTo(addChildPath, chunkSize = Some(10240))
 ```
 
 `chunkSize` is bytes number.
-For other information of chunked update API, see the [official blog post](https://www.dropbox.com/developers/blog/21/chunked-uploads-beta).
+For more information about the chunked update API, see the [official blog post](https://www.dropbox.com/developers/blog/21/chunked-uploads-beta).
 
 
 ##### Updating File
 
-To update a file on dropbox, using implicit conversions for `com.dropbox.core.DbxEntry.File`.
+To update a file on dropbox, use the implicit conversions for `com.dropbox.core.DbxEntry.File`.
 ```Scala
 val forUpdateFile = new java.io.File("your local file path")
 uploadedFile update forUpdateFile
 ```
 
-On update to big size file, set `Some(Int)` value to `chunkSize` parameter(default, `None`)
-If set this paramter, dropbox4s uses chunked upload API.
+If you want to update a big file, you will need to use the chunked uploads functionality. To do so, set `Some(Int)` value to the `chunkSize` parameter (default, `None`).
+If you set this parameter, dropbox4s will use the chunked upload API.
 ```Scala
 // for chunked upload, chunk size is 10kb.
 uploadedFile update(forUpdateFile, Some(10240))
 ```
 
 `chunkSize` is bytes number.
-For other information of chunked update API, see the [official blog post](https://www.dropbox.com/developers/blog/21/chunked-uploads-beta).
-
+For more information about the chunked update API, see the [official blog post](https://www.dropbox.com/developers/blog/21/chunked-uploads-beta).
 
 ##### Downloading File
 
-Use `downloadTo` method to download file on dropbox.
-`DropboxPath` or `DbxEntry.File` classes has implicit conversion. And use this method.
+Use the `downloadTo` method to download a file from dropbox.
+`DropboxPath` or `DbxEntry.File` classes have implicit conversion.
 ```Scala
 // use DropboxPath
 addChildPath downloadTo "your local path"
@@ -154,13 +153,13 @@ uploadedFile downloadTo "your local path"
 
 ##### Listing folders and search files
 
-Use `children` method to get metadata of children under dropbox path.
+Use `children` method to get the metadata of children under a dropbox path.
 ```Scala
 // list uploaded files and folders under addChildPath
 val children = addChildPath children
 ```
 
-Use `search` method to search files and folders under dropbox path, contains substring.
+Use `search` method to search files and folders under a dropbox path, contains substring.
 ```Scala
 // search files contains "foo" substring under addChildPath
 val hasFooFiles = search(addChildPath, "foo")
@@ -190,7 +189,7 @@ movedFile remove
 addChildPath remove
 ```
 
-If copy file across uses, use `copyRef` method.
+If you want to copy file across directories, use the `copyRef` method.
 ```Scala
 // get copy ref for get file copy other user(DbxEntry.File).
 // or folder, use copyRef method on DropboxPath
@@ -204,10 +203,73 @@ uploadedFile copyFrom ref
 Core API has other methods, `thumbnail`, `restore`, `shareLink`, `tempDirectLink`, `revision`, `accountInfo`.
 See scaladoc(under `doc` directory on repository) for details.
 
+### Full example
+
+You can find a [tutorial on the official website](https://www.dropbox.com/developers/core/start/java) describing how to use the java sdk. Below is the code of this tutorial written using dropbox4s.
+
+```Scala
+import com.dropbox.core.{DbxAppInfo, DbxAuthFinish, DbxWebAuthNoRedirect}
+import com.dropbox.core.DbxEntry.WithChildren
+import dropbox4s.core.CoreApi
+import dropbox4s.core.model.DropboxPath
+import scala.language.postfixOps
+
+object TestDropbox extends CoreApi {
+
+  // implements fields
+  val applicationName = "YourApplicationName"
+  val version = "1.0.0" // your application version(string)
+  val appKey = "INSERT_APP_KEY";
+  val appSecret = "INSERT_APP_SECRET";
+
+  val appInfo = new DbxAppInfo(appKey, appSecret);
+
+  val webAuth = new DbxWebAuthNoRedirect(requestConfig, appInfo);
+
+  val authorizeUrl: String = webAuth.start();
+
+  def main(args: Array[String]) = {
+    println("1. Go to: " + authorizeUrl);
+    println("2. Click \"Allow\" (you might have to log in first)");
+    println("3. Copy the authorization code.");
+
+    val code = readLine("Please, past the authorization code here: ")
+
+    // This will fail if the user enters an invalid authorization code.
+    implicit val auth: DbxAuthFinish = webAuth.finish(code) // how to get oauth access token, see dropbox-core-sdk document.
+    val accessToken: String = auth.accessToken;
+
+    println("Linked account: " + client(accessToken).getAccountInfo().displayName);
+
+    val appPath = DropboxPath("/")
+
+    // Upload a file
+    val localFile = new java.io.File("working-draft.txt")
+    val remoteFile = DropboxPath("/magnum-opus.txt")
+    val uploadedFile = localFile uploadTo remoteFile
+
+    // If you want to erase the uploaded file each time (without creating versions with numbers)
+    // Be sure to set the isForced parameter to true
+    // val uploadedFile = localFile uploadTo(remoteFile, true)
+
+
+    // List directory
+    val children: WithChildren = appPath children
+
+    for (child <- children) {
+      println("	" + child.name + ": " + child.toString());
+    }
+
+    // Download file
+    val myFile = remoteFile downloadTo "magnum-opus.txt"
+
+  }
+}
+```
+
 
 ### Using Datastore API
-Datastore API of Dropbox4S is written by Scala. Without base sdk.<br/>
-Return values defined on this library.<br/>
+Datastore API of Dropbox4S is written in Scala, without using the base sdk.<br/>
 
 
 Import `dropbox4s.datastore.DatastoresApi` object for using Datastore API DSL and DbxAuthFinish instance set to implicit value.
@@ -226,34 +288,36 @@ class YourApplicataion {
 
 #### Creating a datastore
 
-When creating account local datastore, use `get` method with set `orCreate` value to second parameter. 
+When creating a local datastore account, use the `get` method and pass `orCreate` value as a second parameter. 
 
 ```Scala
 val datastore = get("datastorename", orCreate)
 ```
 
-`orCreate` is predefined value by DatastoreApi object.
-If set second parameter is true, `get` method try to create datastore when datastore has parametarized name is not exist.
-Default value of second parameter is false, `get` method only to get.
+`orCreate` is a value predefined by DatastoreApi object. Actually, it's a boolean defaulting to `true`.
 
-Creating shareable datasotre, use `createShareable` method.
+If you set the second parameter to `true`, `get` method will try to create the datastore if a datastore with the same name doesn't already exist.
+If you set it to `false`, it will only try to get the datastore.
+The default value of the second parameter is `false`.
+
+To create a shareable datastore, use the `createShareable` method.
 
 ```Scala
 val sharedDatastore = createShareable("youappname")
 ```
 
-This datasotre is shared data across multiple Dropbox accounts.
+This datasotre is sharing data across multiple Dropbox accounts.
 
 Note: Key of shareable datastore are unique across Dropbox.
 
-Check datastore is shared, use `isShareable` method has both of `get` and `createShareable` methods returns.
+To check if a datastore is shared, use the `isShareable` method on the object that both `get` and `createShareable` methods are returning.
 
 ```Scala
 datastore.isShareable // false
 sharedDatastore.isShareable // true
 ```
 
-Delete datastore, use `delete` method.
+To delete a datastore, use the `delete` method.
 
 ```Scala
 datastore.delete
@@ -261,14 +325,14 @@ datastore.delete
 
 #### Roles(for shareable datastore)
 
-Any shareable datastores has access control list.
-Get assigned role to principle, use `assignedRole` method.
+Any shareable datastores has an access control list.
+To get the assigned role, use the `assignedRole` method.
 
 ```Scala
 val role = sharedDatastore.assignedRole
 ```
 
-Assign role to principle, use `assign` method.
+To assign a role, use the `assign` method.
 
 ```Scala
 sharedDatastore.assign(Viewer to Public)
@@ -282,7 +346,7 @@ Drop role for principle, use `withdrowRole` method.
 sharedDatastore.withdrawRole(Public)
 ```
 
-See section 'Shared datastores' section of [offitial document](https://www.dropbox.com/developers/datastore/docs/http), detail info about principle and roles.
+See the 'Shared datastores' section of [the official documentation](https://www.dropbox.com/developers/datastore/docs/http), for details about principle and roles.
 Dropbox account creating shared datastore, set role is 'Owner'.
 
 #### Listing datastores
@@ -295,14 +359,14 @@ val list = listDatastores
 
 #### Getting a snapshot
 
-To get snapshot of the current contents of datastore, call `snapshot` method.
+To get a snapshot of the current content of a datastore, call `snapshot` method.
 
 ```Scala
 val snapshot = get("datastorename").snapshot
 ```
 
-Snapshot has `tableNames` and `table` method.
-To get name list of tables on snapshot, call `tableNames` method.
+Snapshot has `tableNames` and `table` methods.
+To get the name list of tables of a snapshot, call `tableNames` method.
 
 ```Scala
 val names = snapshot.tableNames
@@ -310,8 +374,8 @@ val names = snapshot.tableNames
 
 #### Getting table and record
 
-To get table in the current contents, call `table` method with converter function scala object to json value.
-Json value is `JValue` class, this class is demanded by json4s.
+To get a table of the current contents, call the `table` method and provide a converter function. This function should convert scala objects to json values.
+Json value is `JValue` class, this class is provided by json4s.
 
 Note: Field type of record class must be below types.
 
@@ -334,10 +398,10 @@ val converter = SampleRow => JValue = (data) => {
 val sampleTable = snapshot.table("SampleRow")(converter)
 ```
 
-`table` method return `Table` object has `rows` fields.
-This field is mapped data has same tid(table id) in the current contents.
+The `table` method returns a `Table` object and has a `rows` field.
+This field contains the mapped data and has the same tid(table id) than in the current snapshot.
 
-`Table` object has some method for operating rows.
+`Table` object has some method for operating on rows.
 
 ```Scala
 // To insert new records with set rowid for identify data
